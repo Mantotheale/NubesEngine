@@ -9,6 +9,9 @@ import nubes.renderer.buffer.vertexbuffer.VertexLayout;
 import nubes.renderer.shader.OpenGLShaderProgram;
 import nubes.renderer.shader.ShaderProgram;
 import nubes.renderer.shader.ShaderType;
+import nubes.renderer.texture.OpenGLTexture;
+import nubes.renderer.texture.PixelChannels;
+import nubes.renderer.texture.Texture;
 import nubes.window.GLFWWindow;
 import nubes.window.Window;
 import nubes.window.WindowSize;
@@ -21,6 +24,7 @@ public class Main {
     private static VertexBuffer vertexBuffer;
     private static IndexBuffer indexBuffer;
     private static ShaderProgram shaderProgram;
+    private static Texture texture;
 
     public static void main(String[] args) {
         Window window = new GLFWWindow("Hello World!", new WindowSize(1280, 720));
@@ -44,6 +48,9 @@ public class Main {
             vertexBuffer.bind();
             indexBuffer.bind();
             shaderProgram.bind();
+            texture.bind(1);
+
+            shaderProgram.setUniform("texture_slot", 1);
 
             glDrawElements(GL_TRIANGLES, indexBuffer.count(), GL_UNSIGNED_INT, 0);
             window.swapBuffers();
@@ -52,18 +59,20 @@ public class Main {
         vertexBuffer.delete();
         indexBuffer.delete();
         shaderProgram.delete();
+        texture.bind();
     }
 
     public static void setup() {
         VertexLayout vertexLayout = new VertexLayout.Builder()
                 .addFloats(2)
+                .addFloats(2)
                 .build();
 
         vertexBuffer = new OpenGLVertexBuffer(vertexLayout, new float[] {
-                -0.5f, -0.5f,
-                0.5f, -0.5f,
-                0.5f, 0.5f,
-                -0.5f, 0.5f
+                -0.5f, -0.5f, 0, 0,
+                0.5f, -0.5f, 1, 0,
+                0.5f, 0.5f, 1, 1,
+                -0.5f, 0.5f, 0, 1
         });
 
         indexBuffer = new OpenGLIndexBuffer(new int[] {
@@ -76,6 +85,12 @@ public class Main {
                 .addShader(ShaderType.VERTEX, shadersPath.resolve("basic_vertex_shader.vert"))
                 .addShader(ShaderType.FRAGMENT, shadersPath.resolve("basic_fragment_shader.frag"))
                 .build();
+
+        Path texturesPath = Path.of("src/main/resources/textures");
+        texture = new OpenGLTexture(texturesPath.resolve("cloud.png"), PixelChannels.RGBA);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     private static class MutableBool {

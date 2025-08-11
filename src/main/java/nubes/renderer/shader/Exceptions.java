@@ -31,3 +31,9 @@ class ShaderProgramIsDeletedException extends RuntimeException {
         super("The selected shader program has already been deleted. Program: " + shader);
     }
 }
+
+class ShaderUniformNotFoundException extends RuntimeException {
+    public ShaderUniformNotFoundException(ShaderProgram shaderProgram, String uniformName) {
+        super("An uniform with name " + uniformName + " doesn't exist in shader:\n" + shaderProgram);
+    }
+}

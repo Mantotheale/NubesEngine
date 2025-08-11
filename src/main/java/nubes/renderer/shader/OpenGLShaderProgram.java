@@ -36,6 +36,18 @@ public class OpenGLShaderProgram implements ShaderProgram {
         isDeleted = true;
     }
 
+    @Override
+    public void setUniform(@NotNull String name, int value) {
+        if (isDeleted) { throw new ShaderProgramIsDeletedException(this); }
+        glUniform1i(getUniformLocation(name), value);
+    }
+
+    private int getUniformLocation(String name) {
+        int location = glGetUniformLocation(id, name);
+        if (location == -1) { throw new ShaderUniformNotFoundException(this, name); }
+        return location;
+    }
+
     public static class Builder {
         private final @NotNull Map<@NotNull ShaderType, @NotNull Integer> shaders = new EnumMap<>(ShaderType.class);
 
