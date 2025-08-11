@@ -1,4 +1,4 @@
-package nubes.renderer.buffer;
+package nubes.renderer.buffer.indexbuffer;
 
 public interface IndexBuffer {
     void bind();

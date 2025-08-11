@@ -1,4 +1,4 @@
-package nubes.renderer.buffer;
+package nubes.renderer.buffer.indexbuffer;
 
 import org.jetbrains.annotations.NotNull;
 

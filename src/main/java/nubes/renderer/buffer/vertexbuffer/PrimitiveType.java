@@ -1,4 +1,4 @@
-package nubes.renderer.buffer;
+package nubes.renderer.buffer.vertexbuffer;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 

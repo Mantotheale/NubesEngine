@@ -1,17 +1,26 @@
 package nubes;
 
 import nubes.input.enums.Key;
-import nubes.renderer.buffer.*;
+import nubes.renderer.buffer.indexbuffer.IndexBuffer;
+import nubes.renderer.buffer.indexbuffer.OpenGLIndexBuffer;
+import nubes.renderer.buffer.vertexbuffer.OpenGLVertexBuffer;
+import nubes.renderer.buffer.vertexbuffer.VertexBuffer;
+import nubes.renderer.buffer.vertexbuffer.VertexLayout;
+import nubes.renderer.shader.OpenGLShaderProgram;
+import nubes.renderer.shader.ShaderProgram;
+import nubes.renderer.shader.ShaderType;
 import nubes.window.GLFWWindow;
 import nubes.window.Window;
 import nubes.window.WindowSize;
+
+import java.nio.file.Path;
 
 import static org.lwjgl.opengl.GL20.*;
 
 public class Main {
     private static VertexBuffer vertexBuffer;
     private static IndexBuffer indexBuffer;
-    private static int shaderProgram;
+    private static ShaderProgram shaderProgram;
 
     public static void main(String[] args) {
         Window window = new GLFWWindow("Hello World!", new WindowSize(1280, 720));
@@ -34,7 +43,7 @@ public class Main {
 
             vertexBuffer.bind();
             indexBuffer.bind();
-            glUseProgram(shaderProgram);
+            shaderProgram.bind();
 
             glDrawElements(GL_TRIANGLES, indexBuffer.count(), GL_UNSIGNED_INT, 0);
             window.swapBuffers();
@@ -42,6 +51,7 @@ public class Main {
 
         vertexBuffer.delete();
         indexBuffer.delete();
+        shaderProgram.delete();
     }
 
     public static void setup() {
@@ -61,51 +71,11 @@ public class Main {
                 1, 2, 3
         });
 
-        String vertexShaderSource = """
-                #version 330 core
-                
-                layout (location = 0) in vec2 aPos;
-                
-                void main()
-                {
-                   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-                }\0""";
-
-        String fragmentShaderSource = """
-                #version 330 core
-                
-                out vec4 FragColor;
-                
-                void main()
-                {
-                   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-                }
-                \0""";
-
-        int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, vertexShaderSource);
-        glCompileShader(vertexShader);
-
-        if (glGetShaderi(vertexShader, GL_COMPILE_STATUS) == GL_FALSE)
-            throw new IllegalStateException("Couldn't compile vertex shader");
-
-        int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, fragmentShaderSource);
-        glCompileShader(fragmentShader);
-
-        if (glGetShaderi(fragmentShader, GL_COMPILE_STATUS) == GL_FALSE)
-            throw new IllegalStateException("Couldn't compile fragment shader");
-
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-
-        if(glGetProgrami(shaderProgram, GL_LINK_STATUS) == GL_FALSE)
-            throw new IllegalStateException("Couldn't link shader");
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
+        Path shadersPath = Path.of("src/main/resources/shaders");
+        shaderProgram = new OpenGLShaderProgram.Builder()
+                .addShader(ShaderType.VERTEX, shadersPath.resolve("basic_vertex_shader.vert"))
+                .addShader(ShaderType.FRAGMENT, shadersPath.resolve("basic_fragment_shader.frag"))
+                .build();
     }
 
     private static class MutableBool {
