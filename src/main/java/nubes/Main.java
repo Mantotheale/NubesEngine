@@ -1,6 +1,8 @@
 package nubes;
 
 import nubes.input.enums.Key;
+import nubes.renderer.OpenGLRenderer;
+import nubes.renderer.Renderer;
 import nubes.renderer.buffer.indexbuffer.IndexBuffer;
 import nubes.renderer.buffer.indexbuffer.OpenGLIndexBuffer;
 import nubes.renderer.buffer.vertexbuffer.OpenGLVertexBuffer;
@@ -27,9 +29,9 @@ import org.joml.Vector3f;
 import java.nio.file.Path;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
-import static org.lwjgl.opengl.GL20.*;
 
 public class Main {
+    private static Renderer renderer;
     private static VertexBuffer vertexBuffer;
     private static IndexBuffer indexBuffer;
     private static ShaderProgram shaderProgram;
@@ -52,19 +54,14 @@ public class Main {
         while (!shouldClose.get()) {
             window.pollEvents();
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            renderer.setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            renderer.clearColor();
 
-            vertexBuffer.bind();
-            indexBuffer.bind();
-            shaderProgram.bind();
-            texture.bind(1);
+            transform.translate(new Translation((float) -org.joml.Math.sin(glfwGetTime()) / 1000, (float) -Math.cos(glfwGetTime()) / 1000, 0));
+            renderer.submit(vertexBuffer, indexBuffer, shaderProgram, texture, transform);
 
-            transform.translate(new Translation((float) -Math.sin(glfwGetTime()) / 1000, (float) -Math.cos(glfwGetTime()) / 1000, 0));
-            shaderProgram.setUniform("texture_slot", 1);
-            shaderProgram.setUniform("model", transform.matrix());
-
-            glDrawElements(GL_TRIANGLES, indexBuffer.count(), GL_UNSIGNED_INT, 0);
+            renderer.draw();
+            renderer.flush();
             window.swapBuffers();
         }
 
@@ -106,8 +103,8 @@ public class Main {
         Scaling scaling = new Scaling(0.5f, 2f, 1);
         transform = new Transform(translation, rotation, scaling);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        renderer = new OpenGLRenderer();
+        renderer.enableBlending();
     }
 
     private static class MutableBool {
