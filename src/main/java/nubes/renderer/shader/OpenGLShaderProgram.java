@@ -2,7 +2,10 @@ package nubes.renderer.shader;
 
 import nubes.utils.FileUtils;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -40,6 +43,16 @@ public class OpenGLShaderProgram implements ShaderProgram {
     public void setUniform(@NotNull String name, int value) {
         if (isDeleted) { throw new ShaderProgramIsDeletedException(this); }
         glUniform1i(getUniformLocation(name), value);
+    }
+
+    @Override
+    public void setUniform(@NotNull String name, @NotNull Matrix4fc value) {
+        if (isDeleted) { throw new ShaderProgramIsDeletedException(this); }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = value.get(stack.mallocFloat(16));
+            glUniformMatrix4fv(getUniformLocation(name), false, buffer);
+        }
     }
 
     private int getUniformLocation(String name) {
