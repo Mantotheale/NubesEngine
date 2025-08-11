@@ -1,9 +1,7 @@
 package nubes;
 
 import nubes.input.enums.Key;
-import nubes.renderer.buffer.OpenGLVertexBuffer;
-import nubes.renderer.buffer.VertexBuffer;
-import nubes.renderer.buffer.VertexLayout;
+import nubes.renderer.buffer.*;
 import nubes.window.GLFWWindow;
 import nubes.window.Window;
 import nubes.window.WindowSize;
@@ -12,6 +10,7 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class Main {
     private static VertexBuffer vertexBuffer;
+    private static IndexBuffer indexBuffer;
     private static int shaderProgram;
 
     public static void main(String[] args) {
@@ -34,11 +33,15 @@ public class Main {
             glClear(GL_COLOR_BUFFER_BIT);
 
             vertexBuffer.bind();
+            indexBuffer.bind();
             glUseProgram(shaderProgram);
 
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glDrawElements(GL_TRIANGLES, indexBuffer.count(), GL_UNSIGNED_INT, 0);
             window.swapBuffers();
         }
+
+        vertexBuffer.delete();
+        indexBuffer.delete();
     }
 
     public static void setup() {
@@ -49,7 +52,13 @@ public class Main {
         vertexBuffer = new OpenGLVertexBuffer(vertexLayout, new float[] {
                 -0.5f, -0.5f,
                 0.5f, -0.5f,
-                0, 0.5f
+                0.5f, 0.5f,
+                -0.5f, 0.5f
+        });
+
+        indexBuffer = new OpenGLIndexBuffer(new int[] {
+                0, 1, 3,
+                1, 2, 3
         });
 
         String vertexShaderSource = """

@@ -27,7 +27,7 @@ public class OpenGLVertexBuffer implements VertexBuffer {
 
         glBindVertexArray(vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, Objects.requireNonNull(data), GL_STATIC_DRAW);
 
         for (LayoutElement element: layout) {
             glVertexAttribPointer(

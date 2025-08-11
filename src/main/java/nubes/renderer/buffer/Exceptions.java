@@ -31,3 +31,9 @@ class VertexBufferIsDeletedException extends RuntimeException {
         super("The selected vertex buffer has already been deleted. Buffer: " + vertexBuffer);
     }
 }
+
+class IndexBufferIsDeletedException extends RuntimeException {
+    public IndexBufferIsDeletedException(@NotNull IndexBuffer indexBuffer) {
+        super("The selected index buffer has already been deleted. Buffer: " + indexBuffer);
+    }
+}
