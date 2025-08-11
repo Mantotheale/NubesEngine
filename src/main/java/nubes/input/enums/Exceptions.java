@@ -5,4 +5,3 @@ class InvalidActionCodeException extends RuntimeException {
         super("The specified action wasn't a valid action code. The code was " + action);
     }
 }
-
