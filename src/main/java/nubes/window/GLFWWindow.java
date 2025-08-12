@@ -1,6 +1,6 @@
 package nubes.window;
 
-import nubes.input.*;
+import nubes.input.events.*;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -45,6 +45,10 @@ public class GLFWWindow implements Window {
 
         GL.createCapabilities();
         glViewport(0, 0, size.width(), size.height());
+    }
+
+    public long id() {
+        return id;
     }
 
     @Override

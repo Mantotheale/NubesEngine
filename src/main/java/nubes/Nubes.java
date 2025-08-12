@@ -1,6 +1,8 @@
 package nubes;
 
-import nubes.input.Input;
+import nubes.input.GLFWInputState;
+import nubes.input.InputState;
+import nubes.input.events.Input;
 import nubes.window.GLFWWindow;
 import nubes.window.Window;
 import nubes.window.WindowSize;
@@ -15,11 +17,14 @@ public abstract class Nubes {
     private final static double ONE_SEC_TIME = 1;
 
     private final @NotNull Window window;
+    private final @NotNull InputState inputState;
     private final double UPDATE_TIME;
     private boolean shouldClose;
 
     public Nubes(@NotNull String windowTitle, @NotNull WindowSize size, int fps) {
         this.window = new GLFWWindow(Objects.requireNonNull(windowTitle), size);
+        this.inputState = new GLFWInputState((GLFWWindow) window);
+
         window.enableVSync();
 
         window.setKeyCallback(this::onInput);
@@ -71,5 +76,9 @@ public abstract class Nubes {
 
     public void signalClose() {
         shouldClose = true;
+    }
+
+    public final @NotNull InputState inputState() {
+        return inputState;
     }
 }

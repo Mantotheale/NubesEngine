@@ -1,6 +1,6 @@
 package nubes.window;
 
-import nubes.input.*;
+import nubes.input.events.InputCallback;
 import org.jetbrains.annotations.NotNull;
 
 public interface Window {

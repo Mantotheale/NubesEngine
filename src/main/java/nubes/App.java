@@ -1,8 +1,9 @@
 package nubes;
 
-import nubes.input.CloseInput;
-import nubes.input.Input;
-import nubes.input.KeyInput;
+import nubes.input.enums.Button;
+import nubes.input.events.CloseInput;
+import nubes.input.events.Input;
+import nubes.input.events.KeyInput;
 import nubes.input.enums.Action;
 import nubes.input.enums.Key;
 import nubes.renderer.OpenGLRenderer;
@@ -82,7 +83,9 @@ public class App extends Nubes {
 
     @Override
     protected void update() {
-
+        if (inputState().isButtonDown(Button.RIGHT)) {
+            signalClose();
+        }
     }
 
     @Override

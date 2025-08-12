@@ -1,4 +1,4 @@
-package nubes.input;
+package nubes.input.events;
 
 import org.jetbrains.annotations.NotNull;
 
