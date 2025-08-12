@@ -36,12 +36,15 @@ import java.util.Objects;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class App extends Nubes {
-    private static Renderer renderer;
-    private static VertexBuffer vertexBuffer;
-    private static IndexBuffer indexBuffer;
-    private static ShaderProgram shaderProgram;
-    private static Texture texture;
-    private static Transform transform;
+    private final @NotNull Renderer renderer;
+    private final @NotNull VertexBuffer vertexBuffer;
+    private final @NotNull IndexBuffer indexBuffer;
+    private final @NotNull ShaderProgram shaderProgram;
+    private final @NotNull Texture texture;
+    private final @NotNull Transform transform;
+
+    private int updatesCount;
+    private int rendersCount;
 
     public App(@NotNull String windowTitle, @NotNull WindowSize size, int fps) {
         super(Objects.requireNonNull(windowTitle), Objects.requireNonNull(size), fps);
@@ -79,6 +82,9 @@ public class App extends Nubes {
 
         renderer = new OpenGLRenderer();
         renderer.enableBlending();
+
+        updatesCount = 0;
+        rendersCount = 0;
     }
 
     @Override
@@ -86,15 +92,21 @@ public class App extends Nubes {
         if (inputState().isButtonDown(Button.RIGHT)) {
             signalClose();
         }
+
+        updatesCount++;
     }
 
     @Override
     protected void oneSecUpdate() {
-
+        System.out.println("FPS: " + rendersCount + ", UPS: " + updatesCount);
+        updatesCount = 0;
+        rendersCount = 0;
     }
 
     @Override
     protected void onInput(@NotNull Input input) {
+        System.out.println(input);
+
         switch (input) {
             case CloseInput _ -> signalClose();
             case KeyInput(Key key, Action action, _) when key.equals(Key.ESC) && action.equals(Action.PRESS) ->
@@ -113,6 +125,7 @@ public class App extends Nubes {
 
         renderer.draw();
         renderer.flush();
+        rendersCount++;
     }
 
     @Override
