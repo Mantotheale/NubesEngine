@@ -12,17 +12,17 @@ public interface Window {
     void swapBuffers();
 
     void pollEvents();
-    void setKeyCallback(@NotNull KeyCallback keyCallback);
+    void setKeyCallback(@NotNull InputCallback callback);
     void freeKeyCallback();
-    void setMouseButtonCallback(@NotNull ButtonCallback buttonCallback);
+    void setMouseButtonCallback(@NotNull InputCallback callback);
     void freeMouseButtonCallback();
-    void setCursorCallback(@NotNull CursorCallback cursorCallback);
+    void setCursorCallback(@NotNull InputCallback callback);
     void freeCursorCallback();
-    void setScrollCallback(@NotNull ScrollCallback scrollCallback);
+    void setScrollCallback(@NotNull InputCallback callback);
     void freeScrollCallback();
-    void setResizeCallback(@NotNull WindowResizeCallback resizeCallback);
+    void setResizeCallback(@NotNull InputCallback callback);
     void freeResizeCallback();
-    void setCloseCallback(@NotNull CloseWindowCallback closeCallback);
+    void setCloseCallback(@NotNull InputCallback callback);
     void freeCloseCallback();
 
     void delete();

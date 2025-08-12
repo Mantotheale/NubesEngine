@@ -1,10 +1,6 @@
 package nubes.window;
 
 import nubes.input.*;
-import nubes.input.enums.Action;
-import nubes.input.enums.Button;
-import nubes.input.enums.Key;
-import nubes.input.enums.Modifier;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -85,13 +81,9 @@ public class GLFWWindow implements Window {
     }
 
     @Override
-    public void setKeyCallback(@NotNull KeyCallback keyCallback) {
-        glfwSetKeyCallback(id,
-                (_, key, _, action, modifier) -> keyCallback.callback(
-                        Key.fromGLFWKey(key),
-                        Action.fromGLFWAction(action),
-                        Modifier.fromGLFWModifier(modifier)
-                )
+    public void setKeyCallback(@NotNull InputCallback callback) {
+        glfwSetKeyCallback(id, (_, key, _, action, modifier) ->
+                callback.invoke(KeyInput.fromGLFWInput(key, action, modifier))
         );
     }
 
@@ -101,13 +93,9 @@ public class GLFWWindow implements Window {
     }
 
     @Override
-    public void setMouseButtonCallback(@NotNull ButtonCallback buttonCallback) {
-        glfwSetMouseButtonCallback(id,
-                (_, button, action, modifier) -> buttonCallback.callback(
-                        Button.fromGLFWButton(button),
-                        Action.fromGLFWAction(action),
-                        Modifier.fromGLFWModifier(modifier)
-                )
+    public void setMouseButtonCallback(@NotNull InputCallback callback) {
+        glfwSetMouseButtonCallback(id, (_, button, action, modifier) ->
+            callback.invoke(ButtonInput.fromGLFWInput(button, action, modifier))
         );
     }
 
@@ -117,10 +105,8 @@ public class GLFWWindow implements Window {
     }
 
     @Override
-    public void setCursorCallback(@NotNull CursorCallback cursorCallback) {
-        glfwSetCursorPosCallback(id,
-                (_, x, y) -> cursorCallback.callback(x, y)
-        );
+    public void setCursorCallback(@NotNull InputCallback callback) {
+        glfwSetCursorPosCallback(id, (_, x, y) -> callback.invoke(CursorInput.fromGLFWInput(x, y)));
     }
 
     @Override
@@ -129,10 +115,8 @@ public class GLFWWindow implements Window {
     }
 
     @Override
-    public void setScrollCallback(@NotNull ScrollCallback scrollCallback) {
-        glfwSetScrollCallback(id,
-                (_, x, y) -> scrollCallback.callback(x, y)
-        );
+    public void setScrollCallback(@NotNull InputCallback callback) {
+        glfwSetScrollCallback(id, (_, x, y) -> callback.invoke(ScrollInput.fromGLFWInput(x, y)));
     }
 
     @Override
@@ -141,10 +125,8 @@ public class GLFWWindow implements Window {
     }
 
     @Override
-    public void setResizeCallback(@NotNull WindowResizeCallback resizeCallback) {
-        glfwSetFramebufferSizeCallback(id,
-                (_, width, height) -> resizeCallback.callback(width, height)
-        );
+    public void setResizeCallback(@NotNull InputCallback callback) {
+        glfwSetFramebufferSizeCallback(id, (_, width, height) -> callback.invoke(ResizeInput.fromGLFWInput(width, height)));
     }
 
     @Override
@@ -153,8 +135,8 @@ public class GLFWWindow implements Window {
     }
 
     @Override
-    public void setCloseCallback(@NotNull CloseWindowCallback closeCallback) {
-        glfwSetWindowCloseCallback(id, _ -> closeCallback.callback());
+    public void setCloseCallback(@NotNull InputCallback callback) {
+        glfwSetWindowCloseCallback(id, _ -> callback.invoke(CloseInput.instance()));
     }
 
     @Override

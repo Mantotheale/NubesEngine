@@ -1,5 +1,10 @@
 package nubes;
 
+import nubes.input.CloseInput;
+import nubes.input.Input;
+import nubes.input.KeyInput;
+import nubes.input.enums.Action;
+import nubes.input.enums.Key;
 import nubes.renderer.OpenGLRenderer;
 import nubes.renderer.Renderer;
 import nubes.renderer.buffer.indexbuffer.IndexBuffer;
@@ -86,11 +91,21 @@ public class App extends Nubes {
     }
 
     @Override
+    protected void onInput(@NotNull Input input) {
+        switch (input) {
+            case CloseInput _ -> signalClose();
+            case KeyInput(Key key, Action action, _) when key.equals(Key.ESC) && action.equals(Action.PRESS) ->
+                    signalClose();
+            default -> {}
+        }
+    }
+
+    @Override
     protected void render() {
         renderer.setClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         renderer.clearColor();
 
-        transform.translate(new Translation((float) -org.joml.Math.sin(glfwGetTime()) / 1000, (float) -Math.cos(glfwGetTime()) / 1000, 0));
+        transform.translate(new Translation((float) -Math.sin(glfwGetTime()) / 1000, (float) -Math.cos(glfwGetTime()) / 1000, 0));
         renderer.submit(vertexBuffer, indexBuffer, shaderProgram, texture, transform);
 
         renderer.draw();

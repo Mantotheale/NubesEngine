@@ -1,5 +1,6 @@
 package nubes;
 
+import nubes.input.Input;
 import nubes.window.GLFWWindow;
 import nubes.window.Window;
 import nubes.window.WindowSize;
@@ -21,7 +22,12 @@ public abstract class Nubes {
         this.window = new GLFWWindow(Objects.requireNonNull(windowTitle), size);
         window.enableVSync();
 
-        window.setCloseCallback(this::signalClose);
+        window.setKeyCallback(this::onInput);
+        window.setMouseButtonCallback(this::onInput);
+        window.setCursorCallback(this::onInput);
+        window.setScrollCallback(this::onInput);
+        window.setResizeCallback(this::onInput);
+        window.setCloseCallback(this::onInput);
 
         this.UPDATE_TIME = (double) 1 / fps;
         this.shouldClose = false;
@@ -56,6 +62,8 @@ public abstract class Nubes {
     protected abstract void update();
 
     protected abstract void oneSecUpdate();
+
+    protected abstract void onInput(@NotNull Input input);
 
     protected abstract void render();
 
