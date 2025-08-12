@@ -36,8 +36,8 @@ public class OpenGLRenderer implements Renderer {
             shaderPrograms.get(i).bind();
             textures.get(i).bind(1);
 
-            shaderPrograms.get(i).setUniform("texture_slot", 1);
-            shaderPrograms.get(i).setUniform("model", transforms.get(i).matrix());
+            shaderPrograms.get(i).setInt("texture_slot", 1);
+            shaderPrograms.get(i).setMat4f("model", transforms.get(i).matrix());
 
             glDrawElements(GL_TRIANGLES, indexBuffers.get(i).count(), GL_UNSIGNED_INT, 0);
         }

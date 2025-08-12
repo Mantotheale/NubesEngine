@@ -40,13 +40,13 @@ public class OpenGLShaderProgram implements ShaderProgram {
     }
 
     @Override
-    public void setUniform(@NotNull String name, int value) {
+    public void setInt(@NotNull String name, int value) {
         if (isDeleted) { throw new ShaderProgramIsDeletedException(this); }
         glUniform1i(getUniformLocation(name), value);
     }
 
     @Override
-    public void setUniform(@NotNull String name, @NotNull Matrix4fc value) {
+    public void setMat4f(@NotNull String name, @NotNull Matrix4fc value) {
         if (isDeleted) { throw new ShaderProgramIsDeletedException(this); }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {

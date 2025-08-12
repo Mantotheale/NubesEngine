@@ -7,6 +7,6 @@ public interface ShaderProgram {
     void bind();
     void unbind();
     void delete();
-    void setUniform(@NotNull String name, int value);
-    void setUniform(@NotNull String name, @NotNull Matrix4fc value);
+    void setInt(@NotNull String name, int value);
+    void setMat4f(@NotNull String name, @NotNull Matrix4fc value);
 }
