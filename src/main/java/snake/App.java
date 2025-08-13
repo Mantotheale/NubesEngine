@@ -1,5 +1,6 @@
-package nubes;
+package snake;
 
+import nubes.Nubes;
 import nubes.input.enums.Button;
 import nubes.input.events.CloseInput;
 import nubes.input.events.Input;
@@ -13,6 +14,7 @@ import nubes.renderer.buffer.indexbuffer.OpenGLIndexBuffer;
 import nubes.renderer.buffer.vertexbuffer.OpenGLVertexBuffer;
 import nubes.renderer.buffer.vertexbuffer.VertexBuffer;
 import nubes.renderer.buffer.vertexbuffer.VertexLayout;
+import nubes.renderer.camera.Camera;
 import nubes.renderer.shader.OpenGLShaderProgram;
 import nubes.renderer.shader.ShaderProgram;
 import nubes.renderer.shader.ShaderType;
@@ -25,10 +27,8 @@ import nubes.transform.Transform;
 import nubes.transform.Translation;
 import nubes.window.WindowSize;
 import org.jetbrains.annotations.NotNull;
-import org.joml.AxisAngle4f;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.nio.file.Path;
 import java.util.Objects;
@@ -80,7 +80,9 @@ public class App extends Nubes {
         Scaling scaling = new Scaling(0.5f, 2f, 1);
         transform = new Transform(translation, rotation, scaling);
 
-        renderer = new OpenGLRenderer();
+        renderer = new OpenGLRenderer(
+                new Camera(new Vector3f(0, 0 , 1), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0)),
+                new Matrix4f().setOrtho(-10, 10, -10, 10, 0, 20));
         renderer.enableBlending();
 
         updatesCount = 0;

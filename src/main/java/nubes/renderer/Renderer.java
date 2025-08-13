@@ -14,6 +14,9 @@ public interface Renderer {
             @NotNull ShaderProgram shaderProgram,
             @NotNull Texture texture,
             @NotNull Transform transform);
+    void submit(
+            @NotNull RenderComponent renderComponent,
+            @NotNull Transform transform);
     void draw();
     void flush();
     void setClearColor(float r, float g, float b, float a);

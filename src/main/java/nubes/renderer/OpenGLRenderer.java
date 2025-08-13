@@ -2,22 +2,32 @@ package nubes.renderer;
 
 import nubes.renderer.buffer.indexbuffer.IndexBuffer;
 import nubes.renderer.buffer.vertexbuffer.VertexBuffer;
+import nubes.renderer.camera.Camera;
 import nubes.renderer.shader.ShaderProgram;
 import nubes.renderer.texture.Texture;
 import nubes.transform.Transform;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class OpenGLRenderer implements Renderer {
+    private final @NotNull Camera camera;
+    private final @NotNull Matrix4f projection;
     private final @NotNull List<VertexBuffer> vertexBuffers = new ArrayList<>();
     private final @NotNull List<IndexBuffer> indexBuffers = new ArrayList<>();
     private final @NotNull List<ShaderProgram> shaderPrograms = new ArrayList<>();
     private final @NotNull List<Texture> textures = new ArrayList<>();
     private final @NotNull List<Transform> transforms = new ArrayList<>();
+
+    public OpenGLRenderer(@NotNull Camera camera, @NotNull Matrix4f projection) {
+        this.camera = Objects.requireNonNull(camera);
+        this.projection = Objects.requireNonNull(projection);
+    }
 
     @Override
     public void submit(@NotNull VertexBuffer vertexBuffer, @NotNull IndexBuffer indexBuffer, @NotNull ShaderProgram shaderProgram, @NotNull Texture texture, @NotNull Transform transform) {
@@ -25,6 +35,15 @@ public class OpenGLRenderer implements Renderer {
         indexBuffers.add(indexBuffer);
         shaderPrograms.add(shaderProgram);
         textures.add(texture);
+        transforms.add(transform);
+    }
+
+    @Override
+    public void submit(@NotNull RenderComponent renderComponent, @NotNull Transform transform) {
+        vertexBuffers.add(renderComponent.vertexBuffer());
+        indexBuffers.add(renderComponent.indexBuffer());
+        shaderPrograms.add(renderComponent.shaderProgram());
+        textures.add(renderComponent.texture());
         transforms.add(transform);
     }
 
@@ -38,6 +57,8 @@ public class OpenGLRenderer implements Renderer {
 
             shaderPrograms.get(i).setInt("texture_slot", 1);
             shaderPrograms.get(i).setMat4f("model", transforms.get(i).matrix());
+            shaderPrograms.get(i).setMat4f("view", camera.matrix());
+            shaderPrograms.get(i).setMat4f("projection", projection);
 
             glDrawElements(GL_TRIANGLES, indexBuffers.get(i).count(), GL_UNSIGNED_INT, 0);
         }
