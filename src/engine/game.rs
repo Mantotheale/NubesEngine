@@ -1,4 +1,4 @@
-use glium::Display;
+use glium::{Display, Surface};
 use glium::glutin::surface::WindowSurface;
 use glium::winit::event::WindowEvent;
 use glium::winit::window::Window;
@@ -33,6 +33,9 @@ impl Application for Game {
     }
 
     fn render(&mut self) {
+        let mut frame = self.display.draw();
+        frame.clear_color(0.5, 0.5, 0.5, 1.0);
+        frame.finish().expect("Couldn't render the frame");
     }
 
     fn should_close(&self) -> bool {

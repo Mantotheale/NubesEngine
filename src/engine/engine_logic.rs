@@ -3,7 +3,7 @@ use glium::backend::glutin::SimpleWindowBuilder;
 use glium::Display;
 use glium::glutin::surface::WindowSurface;
 use glium::winit::application::ApplicationHandler;
-use glium::winit::dpi::PhysicalSize;
+use glium::winit::dpi::{PhysicalPosition, PhysicalSize};
 use glium::winit::event::{WindowEvent};
 use glium::winit::event_loop::{ActiveEventLoop, EventLoopProxy};
 use glium::winit::window::{Window, WindowAttributes, WindowId};
@@ -36,11 +36,26 @@ impl<T: Application> ApplicationHandler<WakeUpEvent> for EngineLogic<T> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let window_attributes = WindowAttributes::default()
             .with_title("Nubes Engine")
-            .with_inner_size(PhysicalSize::new(1280, 1024));
+            .with_inner_size(PhysicalSize::new(1280, 1024))
+            .with_visible(false)
+            .with_resizable(false);
 
         let (window, display) = SimpleWindowBuilder::new()
             .set_window_builder(window_attributes)
             .build(event_loop);
+
+        let monitor = window.current_monitor().expect("Couldn't get the current monitor");
+        let window_size = window.outer_size();
+        let monitor_size = monitor.size();
+        let monitor_position = monitor.position();
+
+        let window_position = PhysicalPosition::<i32>::new(
+            monitor_position.x + ((monitor_size.width - window_size.width) / 2) as i32,
+            monitor_position.y + ((monitor_size.height - window_size.height) / 2) as i32
+        );
+
+        window.set_outer_position(window_position);
+        window.set_visible(true);
 
         let app = T::new(window, display);
         let next_update_time = NextUpdateTime::new(
