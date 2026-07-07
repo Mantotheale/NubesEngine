@@ -1,13 +1,12 @@
 [package]
 name = "NubesEngine"
-version = "0.0.1"
+version = "0.0.0"
 edition = "2024"
 
 [dependencies]
-raw-window-handle = "0.6"
-winit = "0.30"
-glow = "0.17"
-glutin = "0.32"
-glutin-winit = "0.5"
-
-#![allow(clippy::multiple_crate_versions)]
+raw-window-handle = "0.6.2"
+winit = "0.30.13"
+glow = "0.17.0"
+glutin = "0.32.3"
+glutin-winit = "0.5.0"
+bytemuck = "1.25.0"
