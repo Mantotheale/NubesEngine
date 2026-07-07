@@ -1,5 +1,6 @@
 mod engine;
 mod fixed_timer;
+mod renderer;
 
 use crate::engine::Engine;
 use winit::{

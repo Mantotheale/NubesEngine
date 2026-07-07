@@ -9,6 +9,7 @@ use raw_window_handle::HasWindowHandle;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::Window;
 use crate::fixed_timer::FixedTimer;
+use crate::renderer::VertexArray;
 
 pub struct Engine {
     gl: Context,
@@ -97,7 +98,7 @@ impl Engine {
             .set_swap_interval(&gl_context, SwapInterval::DontWait)
             .expect("Couldn't set the swap interval");
 
-        let vertex_array = unsafe {
+        /*let vertex_array = unsafe {
             gl.create_vertex_array().expect("Cannot create vertex array")
         };
         unsafe {gl.bind_vertex_array(Some(vertex_array)); }
@@ -117,7 +118,9 @@ impl Engine {
         ); }
 
         unsafe { gl.vertex_attrib_pointer_f32(0, 2, FLOAT, false, (2 * size_of::<f32>()) as i32, 0) }
-        unsafe { gl.enable_vertex_array_attrib(vertex_array, 0); }
+        unsafe { gl.enable_vertex_array_attrib(vertex_array, 0); }*/
+        let vertices = vec![];
+        let vertex_array = VertexArray::new()
         let program = {
             let program = unsafe { gl.create_program().expect("Cannot create program") };
 
