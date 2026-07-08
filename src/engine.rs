@@ -1,25 +1,40 @@
-use std::time::{Duration, Instant};
-use glow::{Context, HasContext, ARRAY_BUFFER, COLOR_BUFFER_BIT, FLOAT, STATIC_DRAW, TRIANGLES};
-use glutin::context::{GlProfile, NotCurrentGlContext, PossiblyCurrentContext};
-use glutin::display::{GetGlDisplay, GlDisplay};
-use glutin::prelude::GlSurface;
-use glutin::surface::{Surface, SwapInterval, WindowSurface};
+use std::rc::Rc;
+use crate::{
+    fixed_timer::FixedTimer,
+    renderer::gl_context::vertex::array::{GlUsageHint, VertexArray},
+    renderer::gl_context::vertex::layout::{VertexLayout, VertexLayoutBuilder},
+    renderer::gl_context::vertex::Vertex,
+    renderer::gl_context::{GlContext, GlPrimitive}
+};
+use glow::{
+    HasContext,
+    COLOR_BUFFER_BIT
+};
+use glutin::{
+    context::{GlProfile, NotCurrentGlContext, PossiblyCurrentContext},
+    display::{GetGlDisplay, GlDisplay},
+    prelude::GlSurface,
+    surface::{Surface, SwapInterval, WindowSurface}
+};
 use glutin_winit::GlWindow;
 use raw_window_handle::HasWindowHandle;
-use winit::event_loop::ActiveEventLoop;
-use winit::window::Window;
-use crate::fixed_timer::FixedTimer;
-use crate::renderer::VertexArray;
+use std::time::{Duration, Instant};
+use winit::{
+    event_loop::ActiveEventLoop,
+    window::Window
+};
 
 pub struct Engine {
-    gl: Context,
+    gl: Rc<GlContext>,
     gl_surface: Surface<WindowSurface>,
     gl_context: PossiblyCurrentContext,
     _window: Window,
     update_timer: FixedTimer,
     one_sec_timer: FixedTimer,
     update_count: u16,
-    render_count: u16
+    render_count: u16,
+    vertex_array1: VertexArray<PositionVertex>,
+    vertex_array2: VertexArray<PositionVertex>
 }
 
 impl Engine {
@@ -55,7 +70,7 @@ impl Engine {
             .and_then(|window| window.window_handle().map(Into::into).ok());
 
         let not_current_gl_context = {
-            use glutin::context::{ContextAttributesBuilder, ContextApi, Version};
+            use glutin::context::{ContextApi, ContextAttributesBuilder, Version};
 
             let context_attributes = ContextAttributesBuilder::new()
                 .with_context_api(ContextApi::OpenGl(Some(Version { major: 3, minor: 3, })))
@@ -94,35 +109,32 @@ impl Engine {
             Context::from_loader_function_cstr(|s| gl_display.get_proc_address(s))
         };
 
+        let gl = Rc::new(GlContext::new(gl));
+
         gl_surface
             .set_swap_interval(&gl_context, SwapInterval::DontWait)
             .expect("Couldn't set the swap interval");
 
-        /*let vertex_array = unsafe {
-            gl.create_vertex_array().expect("Cannot create vertex array")
-        };
-        unsafe {gl.bind_vertex_array(Some(vertex_array)); }
+        let vertices1 = vec![
+            PositionVertex { x: -0.75, y: 0.5 },
+            PositionVertex { x: 0.75, y: 0.5 },
+            PositionVertex { x: 0f32, y: 0.75 },
+        ];
 
-        let vertex_buffer = unsafe {
-            gl.create_buffer().expect("Cannot create a vertex buffer")
-        };
-        unsafe { gl.bind_buffer(ARRAY_BUFFER, Some(vertex_buffer)); }
+        let vertices2 = vec![
+            PositionVertex { x: -0.75, y: -0.75 },
+            PositionVertex { x: 0.75, y: -0.75 },
+            PositionVertex { x: 0.75, y: 0.5 },
+            PositionVertex { x: -0.75, y: 0.5 },
+        ];
 
-        unsafe { gl.buffer_data_u8_slice(
-            ARRAY_BUFFER,
-            bytemuck::cast_slice(&[
-                -0.5f32, -0.5, 0.5, -0.5, -0.5, 0.5,
-                0.5, -0.5, 0.5, 0.5, -0.5, 0.5
-            ]),
-            STATIC_DRAW
-        ); }
+        let indices = vec![0u8, 1, 3, 1, 2, 3];
 
-        unsafe { gl.vertex_attrib_pointer_f32(0, 2, FLOAT, false, (2 * size_of::<f32>()) as i32, 0) }
-        unsafe { gl.enable_vertex_array_attrib(vertex_array, 0); }*/
-        let vertices = vec![];
-        let vertex_array = VertexArray::new()
+        let vertex_array1 = VertexArray::new_with_data(&gl, &vertices1, GlUsageHint::StaticDraw);
+        let vertex_array2 = VertexArray::new_indexed_with_data(&gl, &vertices2, &indices, GlUsageHint::StaticDraw);
+
         let program = {
-            let program = unsafe { gl.create_program().expect("Cannot create program") };
+            let program = unsafe { gl.as_raw().create_program().expect("Cannot create program") };
 
             let vertex_shader_source =
                 "#version 330
@@ -153,39 +165,42 @@ impl Engine {
 
             for (shader_type, shader_source) in &shader_sources {
                 let shader = unsafe {
-                    gl.create_shader(*shader_type).expect("Cannot create shader")
+                    gl.as_raw().create_shader(*shader_type).expect("Cannot create shader")
                 };
 
-                unsafe { gl.shader_source(shader, &format!("{shader_source}")); }
-                unsafe { gl.compile_shader(shader); }
+                unsafe { gl.as_raw().shader_source(shader, shader_source.as_ref()); }
+                unsafe { gl.as_raw().compile_shader(shader); }
 
-                unsafe { assert!(gl.get_shader_compile_status(shader), "{}", gl.get_shader_info_log(shader)); }
-                unsafe { gl.attach_shader(program, shader); }
+                unsafe { assert!(gl.as_raw().get_shader_compile_status(shader), "{}", gl.as_raw().get_shader_info_log(shader)); }
+                unsafe { gl.as_raw().attach_shader(program, shader); }
                 shaders.push(shader);
             }
 
-            unsafe { gl.link_program(program); }
-            unsafe { assert!(gl.get_program_link_status(program), "{}", gl.get_program_info_log(program)); }
+            unsafe { gl.as_raw().link_program(program); }
+            unsafe { assert!(gl.as_raw().get_program_link_status(program), "{}", gl.as_raw().get_program_info_log(program)); }
 
             for shader in shaders {
-                unsafe { gl.detach_shader(program, shader); }
-                unsafe { gl.delete_shader(shader); }
+                unsafe { gl.as_raw().detach_shader(program, shader); }
+                unsafe { gl.as_raw().delete_shader(shader); }
             }
 
             program
         };
 
-        unsafe { gl.use_program(Some(program)); }
-        unsafe { gl.clear_color(0.1, 0.2, 0.3, 1.0); }
+        unsafe { gl.as_raw().use_program(Some(program)); }
+        unsafe { gl.as_raw().clear_color(0.1, 0.2, 0.3, 1.0); }
 
-        Self {gl,
+        Self {
+            gl,
             gl_surface,
             gl_context,
             _window: window,
             update_timer: FixedTimer::new(Duration::from_secs_f64(1f64 / 60f64)),
             one_sec_timer: FixedTimer::new(Duration::from_secs(1)),
             update_count: 0,
-            render_count: 0
+            render_count: 0,
+            vertex_array1,
+            vertex_array2
         }
     }
 
@@ -194,8 +209,10 @@ impl Engine {
     }
 
     pub fn render(&mut self) {
-        unsafe { self.gl.clear(COLOR_BUFFER_BIT); }
-        unsafe { self.gl.draw_arrays(TRIANGLES, 0, 6); }
+        unsafe { self.gl.as_raw().clear(COLOR_BUFFER_BIT); }
+        self.gl.draw(&self.vertex_array1, GlPrimitive::Triangles);
+        self.gl.draw(&self.vertex_array2, GlPrimitive::Triangles);
+
         self.gl_surface.swap_buffers(&self.gl_context).expect("Couldn't swap buffers");
 
         self.render_count += 1;
@@ -225,5 +242,18 @@ impl Engine {
 impl Drop for Engine {
     fn drop(&mut self) {
         println!("Engine dropped");
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, bytemuck::NoUninit)]
+struct PositionVertex {
+    x: f32,
+    y: f32,
+}
+
+impl Vertex for PositionVertex {
+    fn layout() -> VertexLayout {
+        VertexLayoutBuilder::new().add_floats(2).build()
     }
 }
