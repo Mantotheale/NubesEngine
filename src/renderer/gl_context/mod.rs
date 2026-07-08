@@ -76,8 +76,8 @@ impl GlContext {
         &self.gl
     }
 
-    fn gen_vertex_array<V: Vertex>(&self, len: usize, usage: GlUsageHint)
-        -> (NativeVertexArray, NativeBuffer)
+    fn gen_vertex_array<V: Vertex>(&self, capacity: usize, usage: GlUsageHint)
+                                   -> (NativeVertexArray, NativeBuffer)
     {
         let mut state = self.state.borrow_mut();
 
@@ -91,7 +91,7 @@ impl GlContext {
         };
         unsafe { self.gl.bind_buffer(ARRAY_BUFFER, Some(vertex_buffer)); }
 
-        unsafe { self.gl.buffer_data_size(ARRAY_BUFFER, (V::layout().byte_size() * len) as i32, usage.gl_value()); }
+        unsafe { self.gl.buffer_data_size(ARRAY_BUFFER, (V::layout().byte_size() * capacity) as i32, usage.gl_value()); }
 
         for component in &V::layout() {
             unsafe { component.enable_on(&self.gl, vertex_array); }

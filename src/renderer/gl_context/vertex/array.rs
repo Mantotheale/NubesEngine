@@ -37,15 +37,16 @@ impl GlUsageHint {
 struct CommonVertexArrayData<V: Vertex> {
     array: NativeVertexArray,
     vertex_buffer: NativeBuffer,
+    capacity: usize,
     len: usize,
     phantom_data: PhantomData<V>,
 }
 
 impl<V: Vertex> CommonVertexArrayData<V> {
-    fn new(gl_context: &GlContext, len: usize, usage: GlUsageHint) -> Self {
+    fn new(gl_context: &GlContext, capacity: usize, usage: GlUsageHint) -> Self {
         let (vertex_array, vertex_buffer) =
-            gl_context.gen_vertex_array::<V>(len, usage);
-        Self { array: vertex_array, vertex_buffer, len, phantom_data: PhantomData }
+            gl_context.gen_vertex_array::<V>(capacity, usage);
+        Self { array: vertex_array, vertex_buffer, capacity, len: 0, phantom_data: PhantomData }
     }
 }
 
@@ -69,28 +70,28 @@ pub struct VertexArray<V: Vertex> {
 }
 
 impl<V: Vertex> VertexArray<V> {
-    pub fn new(gl_context: &Rc<GlContext>, len: usize, usage: GlUsageHint) -> Self {
+    pub fn new(gl_context: &Rc<GlContext>, capacity: usize, usage: GlUsageHint) -> Self {
         Self {
             gl_context: gl_context.clone(),
-            common_data: CommonVertexArrayData::new(gl_context, len, usage),
+            common_data: CommonVertexArrayData::new(gl_context, capacity, usage),
             index_data: None
         }
     }
 
     pub fn new_with_data(gl_context: &Rc<GlContext>, data: &[V], usage: GlUsageHint) -> Self {
-        let array = Self::new(gl_context, data.len(), usage);
+        let mut array = Self::new(gl_context, data.len(), usage);
         array.load(data);
         array
     }
 
-    pub fn new_indexed<I: Index>(gl_context: &Rc<GlContext>, len: usize, indices: &[I], usage: GlUsageHint) -> Self {
-        let common_data = CommonVertexArrayData::new(gl_context, len, usage);
+    pub fn new_indexed<I: Index>(gl_context: &Rc<GlContext>, capacity: usize, indices: &[I], usage: GlUsageHint) -> Self {
+        let common_data = CommonVertexArrayData::new(gl_context, capacity, usage);
         let index_data = IndexBufferData::new(gl_context, indices);
         Self { gl_context: gl_context.clone(), common_data, index_data: Some(index_data) }
     }
 
     pub fn new_indexed_with_data<I: Index>(gl_context: &Rc<GlContext>, data: &[V], indices: &[I], usage: GlUsageHint) -> Self {
-        let array = Self::new_indexed(gl_context, data.len(), indices, usage);
+        let mut array = Self::new_indexed(gl_context, data.len(), indices, usage);
         array.load(data);
         array
     }
@@ -99,9 +100,10 @@ impl<V: Vertex> VertexArray<V> {
         self.common_data.array
     }
 
-    pub fn load(&self, data: &[V]) {
-        assert!(data.len() <= self.common_data.len);
+    pub fn load(&mut self, data: &[V]) {
+        assert!(data.len() <= self.common_data.capacity);
         self.gl_context.load_vertex_buffer(self.common_data.vertex_buffer, data);
+        self.common_data.len = data.len();
     }
 
     pub fn draw(&self, gl: &Context, gl_primitive: GlPrimitive) {
