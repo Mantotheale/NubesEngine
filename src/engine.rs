@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::rc::Rc;
 use crate::{
     fixed_timer::FixedTimer,
@@ -23,6 +24,8 @@ use winit::{
     event_loop::ActiveEventLoop,
     window::Window
 };
+use crate::renderer::gl_context::shader::shader_kind::{FragmentShader, VertexShader};
+use crate::renderer::gl_context::shader::ShaderProgram;
 
 pub struct Engine {
     gl: Rc<GlContext>,
@@ -34,7 +37,8 @@ pub struct Engine {
     update_count: u16,
     render_count: u16,
     vertex_array1: VertexArray<PositionVertex>,
-    vertex_array2: VertexArray<PositionVertex>
+    vertex_array2: VertexArray<PositionVertex>,
+    shader_program: ShaderProgram
 }
 
 impl Engine {
@@ -133,61 +137,16 @@ impl Engine {
         let vertex_array1 = VertexArray::new_with_data(&gl, &vertices1, GlUsageHint::StaticDraw);
         let vertex_array2 = VertexArray::new_indexed_with_data(&gl, &vertices2, &indices, GlUsageHint::StaticDraw);
 
-        let program = {
-            let program = unsafe { gl.as_raw().create_program().expect("Cannot create program") };
+        let vertex_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/shaders/basic.vert");
+        let fragment_path = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/shaders/basic.frag");
 
-            let vertex_shader_source =
-                "#version 330
-                    layout(location = 0) in vec2 aPos;
+        let shader_program = ShaderProgram::new(
+            &gl,
+            VertexShader::new_from_path(&gl, Path::new(vertex_path)),
+            None,
+            FragmentShader::new_from_path(&gl, Path::new(fragment_path))
+        );
 
-                    out vec2 vColor;
-
-                    void main() {
-                        vColor = aPos;
-                        gl_Position = vec4(aPos, 0.0, 1.0);
-                    }";
-            let fragment_shader_source =
-                "#version 330
-                    in vec2 vColor;
-
-                    out vec4 fColor;
-
-                    void main() {
-                        fColor = vec4(vColor, 0.5, 1.0);
-                    }";
-
-            let shader_sources = [
-                (glow::VERTEX_SHADER, vertex_shader_source),
-                (glow::FRAGMENT_SHADER, fragment_shader_source),
-            ];
-
-            let mut shaders = Vec::with_capacity(shader_sources.len());
-
-            for (shader_type, shader_source) in &shader_sources {
-                let shader = unsafe {
-                    gl.as_raw().create_shader(*shader_type).expect("Cannot create shader")
-                };
-
-                unsafe { gl.as_raw().shader_source(shader, shader_source.as_ref()); }
-                unsafe { gl.as_raw().compile_shader(shader); }
-
-                unsafe { assert!(gl.as_raw().get_shader_compile_status(shader), "{}", gl.as_raw().get_shader_info_log(shader)); }
-                unsafe { gl.as_raw().attach_shader(program, shader); }
-                shaders.push(shader);
-            }
-
-            unsafe { gl.as_raw().link_program(program); }
-            unsafe { assert!(gl.as_raw().get_program_link_status(program), "{}", gl.as_raw().get_program_info_log(program)); }
-
-            for shader in shaders {
-                unsafe { gl.as_raw().detach_shader(program, shader); }
-                unsafe { gl.as_raw().delete_shader(shader); }
-            }
-
-            program
-        };
-
-        unsafe { gl.as_raw().use_program(Some(program)); }
         unsafe { gl.as_raw().clear_color(0.1, 0.2, 0.3, 1.0); }
 
         Self {
@@ -200,7 +159,8 @@ impl Engine {
             update_count: 0,
             render_count: 0,
             vertex_array1,
-            vertex_array2
+            vertex_array2,
+            shader_program
         }
     }
 
@@ -210,8 +170,8 @@ impl Engine {
 
     pub fn render(&mut self) {
         unsafe { self.gl.as_raw().clear(COLOR_BUFFER_BIT); }
-        self.gl.draw(&self.vertex_array1, GlPrimitive::Triangles);
-        self.gl.draw(&self.vertex_array2, GlPrimitive::Triangles);
+        self.gl.draw(&self.vertex_array1, &self.shader_program,  GlPrimitive::Triangles);
+        self.gl.draw(&self.vertex_array2, &self.shader_program, GlPrimitive::Triangles);
 
         self.gl_surface.swap_buffers(&self.gl_context).expect("Couldn't swap buffers");
 

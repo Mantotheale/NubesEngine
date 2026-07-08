@@ -123,11 +123,12 @@ impl<V: Vertex> Drop for VertexArray<V> {
         self.gl_context.delete_vertex_array(self.common_data.array);
         self.gl_context.delete_buffer(self.common_data.vertex_buffer);
 
-        println!("Droppati vao e vbo");
+        println!("Vao {:?} dropped", self.common_data.array);
+        println!("Vbo {:?} dropped", self.common_data.vertex_buffer);
 
         if let Some(index_data) = &self.index_data {
             self.gl_context.delete_buffer(index_data.buffer);
-            println!("Droppato ebo");
+            println!("Ebo {:?} dropped", index_data.buffer);
 
         }
     }
