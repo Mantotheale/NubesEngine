@@ -86,7 +86,7 @@ impl GlutinContext {
         if is_vsync {
             self.glutin_surface.set_swap_interval(
                 &self.glutin_context,
-                SwapInterval::Wait(NonZero::new(1).unwrap())
+                SwapInterval::Wait(NonZero::new(1).expect("Valid interval"))
             ).expect("Couldn't set vsync");
         } else {
             self.glutin_surface.set_swap_interval(

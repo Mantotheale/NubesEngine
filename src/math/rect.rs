@@ -1,4 +1,19 @@
 use crate::math::point2f::Point2f;
+use std::fmt;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct InvalidRectDimension {
+    pub dimension: &'static str,
+    pub value: f32,
+}
+
+impl fmt::Display for InvalidRectDimension {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Rect's {} must be positive, it was {}", self.dimension, self.value)
+    }
+}
+
+impl std::error::Error for InvalidRectDimension {}
 
 #[derive(Copy, Clone)]
 pub struct Rect {
@@ -8,9 +23,11 @@ pub struct Rect {
 }
 
 impl Rect {
-    pub fn new(center: Point2f, width: f32, height: f32) -> Result<Self, ()> {
-        if width <= 0f32 || height <= 0f32 { Err(()) }
-        else { Ok(Self { center, width, height }) }
+    pub fn new(center: Point2f, width: f32, height: f32) -> Result<Self, InvalidRectDimension> {
+        if width <= 0f32 { return Err(InvalidRectDimension { dimension: "width", value: width }); }
+        if height <= 0f32 { return Err(InvalidRectDimension { dimension: "height", value: height }); }
+
+        Ok(Self { center, width, height })
     }
 
     pub fn center(&self) -> Point2f {

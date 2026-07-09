@@ -20,7 +20,9 @@ impl Engine {
         let (renderer, window) = Renderer::new(event_loop, window_attributes);
 
         renderer.set_vsync(false);
-        renderer.set_clear_color(Color::new(0.1, 0.2, 0.3, 1.0).unwrap());
+        renderer.set_clear_color(
+            Color::new(0.1, 0.2, 0.3, 1.0).expect("default clear color literal is in [0.0, 1.0]")
+        );
 
         Self {
             renderer,
@@ -41,8 +43,9 @@ impl Engine {
 
         self.renderer.begin_scene();
         self.renderer.add_colored_rect(
-            Rect::new(Point2f::new(0f32, 0f32), 1f32, 1f32).unwrap(),
-            Color::new(0.75, 0.2, 0.3, 1f32).unwrap()
+            Rect::new(Point2f::new(0f32, 0f32), 1f32, 1f32)
+                .expect("Valid rect"),
+            Color::new(0.75, 0.2, 0.3, 1f32).expect("Valid color")
         );
         self.renderer.end_scene();
 

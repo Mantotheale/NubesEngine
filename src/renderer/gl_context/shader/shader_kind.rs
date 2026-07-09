@@ -10,11 +10,12 @@ pub struct GeometryKind;
 
 pub trait ShaderKind {
     const GL_TYPE: u32;
+    const NAME: &'static str;
 }
 
-impl ShaderKind for VertexKind { const GL_TYPE: u32 = VERTEX_SHADER; }
-impl ShaderKind for FragmentKind { const GL_TYPE: u32 = FRAGMENT_SHADER; }
-impl ShaderKind for GeometryKind { const GL_TYPE: u32 = GEOMETRY_SHADER; }
+impl ShaderKind for VertexKind { const GL_TYPE: u32 = VERTEX_SHADER; const NAME: &'static str = "vertex"; }
+impl ShaderKind for FragmentKind { const GL_TYPE: u32 = FRAGMENT_SHADER; const NAME: &'static str = "fragment"; }
+impl ShaderKind for GeometryKind { const GL_TYPE: u32 = GEOMETRY_SHADER; const NAME: &'static str = "geometry"; }
 
 pub struct Shader<K: ShaderKind> {
     native_shader: NativeShader,
@@ -29,7 +30,8 @@ impl<K: ShaderKind> Shader<K> {
     }
 
     pub fn new_from_path(gl_context: &Rc<GlContext>, path: &Path) -> Self {
-        let source = fs::read_to_string(path).expect("Couldn't read shader file");
+        let source = fs::read_to_string(path)
+            .unwrap_or_else(|e| panic!("Couldn't read {} shader file {}: {}", K::NAME, path.display(), e));
 
         let native_shader = gl_context.gen_shader::<K>(&source);
         Self { native_shader, gl_context: gl_context.clone(), _marker: std::marker::PhantomData }

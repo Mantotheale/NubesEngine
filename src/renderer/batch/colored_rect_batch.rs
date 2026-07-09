@@ -1,3 +1,4 @@
+use std::fmt;
 use std::path::Path;
 use std::rc::Rc;
 use crate::constants;
@@ -8,6 +9,17 @@ use crate::renderer::gl_context::{GlContext, GlPrimitive};
 use crate::renderer::gl_context::shader::shader_kind::{FragmentShader, VertexShader};
 use crate::renderer::gl_context::shader::ShaderProgram;
 use crate::renderer::gl_context::vertex::array::{GlUsageHint, VertexArray};
+
+#[derive(Debug)]
+pub struct BatchFull;
+
+impl fmt::Display for BatchFull {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "The colored rect batch is full (max {} rects)", constants::MAX_COLORED_RECTANGLES)
+    }
+}
+
+impl std::error::Error for BatchFull {}
 
 pub struct ColoredRectBatchData {
     vertex_array: VertexArray<Colored2DVertex>,
@@ -53,8 +65,8 @@ impl ColoredRectBatchData {
         }
     }
 
-    pub fn add_rect(&mut self, rect: Rect, color: Color) -> Result<(), ()> {
-        if self.inserted_rects == constants::MAX_COLORED_RECTANGLES { return Err(()); }
+    pub fn add_rect(&mut self, rect: Rect, color: Color) -> Result<(), BatchFull> {
+        if self.inserted_rects == constants::MAX_COLORED_RECTANGLES { return Err(BatchFull); }
 
         let bottom_left = Colored2DVertex::from_point_and_color(rect.bottom_left(), color);
         let bottom_right = Colored2DVertex::from_point_and_color(rect.bottom_right(), color);

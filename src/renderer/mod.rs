@@ -42,7 +42,8 @@ impl Renderer {
 
         if self.colored_rect_batch_data.add_rect(rect, color).is_err() {
             self.colored_rect_batch_data.flush(&self.gl_context);
-            self.colored_rect_batch_data.add_rect(rect, color).unwrap();
+            self.colored_rect_batch_data.add_rect(rect, color)
+                .expect("Batch was just flushed, so it must have room for one more rect");
         }
     }
 

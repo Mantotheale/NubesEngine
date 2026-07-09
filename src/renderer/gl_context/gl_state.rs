@@ -13,7 +13,7 @@ impl GlState {
         Self {
             bound_vertex_array: None,
             bound_program: None,
-            clear_color: Color::new(0f32, 0f32, 0f32, 0f32).unwrap(),
+            clear_color: Color::new(0f32, 0f32, 0f32, 0f32).expect("zero is in [0.0, 1.0]"),
             is_blending_enabled: false
         }
     }

@@ -72,7 +72,7 @@ impl GlContext {
         unsafe {
             assert!(
                 self.gl.get_shader_compile_status(shader),
-                "{}", self.gl.get_shader_info_log(shader)
+                "{} shader failed to compile:\n{}", K::NAME, self.gl.get_shader_info_log(shader)
             );
         }
 
@@ -100,7 +100,7 @@ impl GlContext {
         unsafe {
             assert!(
                 self.gl.get_program_link_status(program),
-                "{}", self.gl.get_program_info_log(program)
+                "shader program failed to link:\n{}", self.gl.get_program_info_log(program)
             );
         }
 

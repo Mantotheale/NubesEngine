@@ -64,7 +64,10 @@ impl IndexBufferData {
     }
 
     fn set_len(&mut self, len: usize) {
-        assert!(len <= self.capacity);
+        assert!(
+            len <= self.capacity,
+            "tried to set index draw count to {len}, but the index buffer's capacity is {}", self.capacity
+        );
         self.len = len;
     }
 }
@@ -107,14 +110,17 @@ impl<V: Vertex> VertexArray<V> {
     }
 
     pub fn load(&mut self, data: &[V], indices_len: Option<usize>) {
-        assert!(data.len() <= self.common_data.capacity);
+        assert!(
+            data.len() <= self.common_data.capacity,
+            "tried to load {} vertices into a buffer with capacity {}", data.len(), self.common_data.capacity
+        );
         self.gl_context.load_vertex_buffer(self.common_data.vertex_buffer, data);
         self.common_data.len = data.len();
 
         if let Some(indices_len) = indices_len {
-            assert!(self.index_data.is_some());
-            let Some(index_data) = &mut self.index_data else { unreachable!() };
-            index_data.set_len(indices_len);
+            self.index_data.as_mut()
+                .expect("load() was given an index count, but this VertexArray has no index buffer")
+                .set_len(indices_len);
         }
     }
 
