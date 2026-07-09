@@ -12,30 +12,37 @@ use winit::{
     event_loop::{ActiveEventLoop, EventLoop},
     window::WindowId
 };
+use winit::dpi::LogicalSize;
+use winit::window::{Window, WindowAttributes};
 
 fn main() {
+    let window_attributes = Window::default_attributes()
+        .with_title("Nubes Engine")
+        .with_inner_size(LogicalSize::new(1280.0, 720.0));
+    
     let event_loop = EventLoop::builder()
         .build()
         .expect("Couldn't build the event loop");
 
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    _ = event_loop.run_app(&mut EntryPoint::new());
+    _ = event_loop.run_app(&mut EntryPoint::new(window_attributes));
 }
 
 struct EntryPoint {
+    window_attributes: WindowAttributes,
     engine: Option<Engine>,
 }
 
 impl EntryPoint {
-    fn new() -> Self {
-        Self { engine: None }
+    fn new(window_attributes: WindowAttributes) -> Self {
+        Self { engine: None, window_attributes }
     }
 }
 
 impl ApplicationHandler for EntryPoint {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        self.engine = Some(Engine::new(event_loop));
+        self.engine = Some(Engine::new(event_loop, self.window_attributes.clone()));
     }
 
     fn window_event(

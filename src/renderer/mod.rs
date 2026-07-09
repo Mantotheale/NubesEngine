@@ -1,45 +1,69 @@
-use std::rc::Rc;
-use glutin::prelude::GlSurface;
-use gl_context::GlContext;
-use crate::renderer::gl_context::shader::ShaderProgram;
-use crate::renderer::gl_context::vertex::array::VertexArray;
-use crate::renderer::gl_context::vertex::layout::{VertexLayout, VertexLayoutBuilder};
-use crate::renderer::gl_context::vertex::Vertex;
+use crate::math::rect::Rect;
+use crate::renderer::batch::colored_rect_batch::ColoredRectBatchData;
+use crate::renderer::color::Color;
 use crate::renderer::glutin_context::GlutinContext;
+use gl_context::GlContext;
+use std::rc::Rc;
+use winit::event_loop::ActiveEventLoop;
+use winit::window::{Window, WindowAttributes};
 
 pub mod gl_context;
 pub mod color;
 mod glutin_context;
-
-struct ColoredSquareBatchData {
-    vertex_array: VertexArray<Colored2DVertex>,
-    shader_program: ShaderProgram
-}
-
-impl ColoredSquareBatchData {
-    pub fn new(gl_context: &Rc<GlContext>) -> Self {
-
-    }
-}
+mod batch;
 
 pub struct Renderer {
     glutin_context: GlutinContext,
-    gl_context: GlContext,
-    colored_square_batch_data: ColoredSquareBatchData
+    gl_context: Rc<GlContext>,
+    colored_rect_batch_data: ColoredRectBatchData,
+    has_scene_begun: bool
 }
 
-#[repr(C)]
-#[derive(Copy, Clone, bytemuck::NoUninit)]
-struct Colored2DVertex {
-    x: f32, y: f32,
-    r: f32, g: f32, b: f32, a: f32
-}
+impl Renderer {
+    pub fn new(event_loop: &ActiveEventLoop, window_attributes: WindowAttributes) -> (Self, Window) {
+        let (glutin_context, window) = GlutinContext::new(event_loop, window_attributes);
+        let gl_context = glutin_context.load_glow_context();
+        let gl_context = Rc::new(GlContext::new(gl_context));
+        let colored_rect_batch_data = ColoredRectBatchData::new(&gl_context);
+        (Self { glutin_context, gl_context, colored_rect_batch_data, has_scene_begun: false }, window)
+    }
 
-impl Vertex for Colored2DVertex {
-    fn layout() -> VertexLayout {
-        VertexLayoutBuilder::new()
-            .add_floats(2)
-            .add_floats(4)
-            .build()
+    pub fn begin_scene(&mut self) {
+        self.has_scene_begun = true;
+    }
+
+    pub fn end_scene(&mut self) {
+        self.colored_rect_batch_data.flush(&self.gl_context);
+        self.has_scene_begun = false;
+    }
+
+    pub fn add_colored_rect(&mut self, rect: Rect, color: Color) {
+        if !self.has_scene_begun { panic!("Scene hasn't begun yet") }
+
+        self.colored_rect_batch_data.add_rect(rect, color);
+    }
+
+    pub fn set_clear_color(&self, color: Color) {
+        self.gl_context.set_clear_color(color);
+    }
+
+    pub fn clear(&self) {
+        self.gl_context.clear_color();
+    }
+
+    pub fn set_blending(&self, is_blending: bool) {
+        if is_blending {
+            self.gl_context.enable_blending();
+        } else {
+            self.gl_context.disable_blending();
+        }
+    }
+
+    pub fn swap_buffers(&self) {
+        self.glutin_context.swap_buffers();
+    }
+
+    pub fn set_vsync(&self, is_vsync: bool) {
+        self.glutin_context.set_vsync(is_vsync);
     }
 }

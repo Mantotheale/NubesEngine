@@ -1,66 +1,15 @@
-use crate::renderer::gl_context::vertex::array::{Index, VertexArray};
-use glow::{Context, HasContext, NativeBuffer, NativeProgram, NativeShader, NativeVertexArray, ARRAY_BUFFER, ELEMENT_ARRAY_BUFFER, STATIC_DRAW, TRIANGLES};
-use std::cell::RefCell;
-use vertex::{array::GlUsageHint, Vertex};
+use crate::renderer::color::Color;
+use crate::renderer::gl_context::gl_state::GlState;
 use crate::renderer::gl_context::shader::shader_kind::{FragmentShader, GeometryShader, ShaderKind, VertexShader};
 use crate::renderer::gl_context::shader::ShaderProgram;
+use crate::renderer::gl_context::vertex::array::{Index, VertexArray};
+use glow::{Context, HasContext, NativeBuffer, NativeProgram, NativeShader, NativeVertexArray, ARRAY_BUFFER, COLOR_BUFFER_BIT, ELEMENT_ARRAY_BUFFER, STATIC_DRAW, TRIANGLES};
+use std::cell::RefCell;
+use vertex::{array::GlUsageHint, Vertex};
 
 pub mod vertex;
 pub mod shader;
-
-pub enum GlPrimitive {
-    Triangles
-}
-
-impl GlPrimitive {
-    fn gl_value(&self) -> u32 {
-        match self {
-            GlPrimitive::Triangles => TRIANGLES
-        }
-    }
-}
-
-struct GlState {
-    bound_vertex_array: Option<NativeVertexArray>,
-    bound_program: Option<NativeProgram>
-}
-
-impl GlState {
-    fn new() -> Self {
-        Self {
-            bound_vertex_array: None,
-            bound_program: None
-        }
-    }
-
-    fn bind_vertex_array(&mut self, gl: &Context, array: NativeVertexArray) {
-        if !matches!(self.bound_vertex_array, Some(a) if a == array) {
-            unsafe { gl.bind_vertex_array(Some(array)); }
-            self.bound_vertex_array = Some(array);
-        }
-    }
-
-    fn unbind_vertex_array(&mut self, gl: &Context, array: NativeVertexArray) {
-        if self.bound_vertex_array.is_some_and(|a| a == array) {
-            unsafe { gl.bind_vertex_array(None); }
-            self.bound_vertex_array = None;
-        }
-    }
-
-    fn bind_program(&mut self, gl: &Context, program: NativeProgram) {
-        if !matches!(self.bound_program, Some(p) if p == program) {
-            unsafe { gl.use_program(Some(program)); }
-            self.bound_program = Some(program);
-        }
-    }
-
-    fn unbind_program(&mut self, gl: &Context, program: NativeProgram) {
-        if self.bound_program.is_some_and(|p| p == program) {
-            unsafe { gl.use_program(None); }
-            self.bound_program = None;
-        }
-    }
-}
+mod gl_state;
 
 pub struct GlContext {
     gl: Context,
@@ -71,11 +20,7 @@ impl GlContext {
     pub fn new(gl: Context) -> Self {
         Self { gl, state: RefCell::new(GlState::new()) }
     }
-
-    pub fn as_raw(&self) -> &Context {
-        &self.gl
-    }
-
+    
     fn gen_vertex_array<V: Vertex>(&self, capacity: usize, usage: GlUsageHint)
                                    -> (NativeVertexArray, NativeBuffer)
     {
@@ -176,6 +121,22 @@ impl GlContext {
         vertex_array.draw(&self.gl, gl_primitive);
     }
 
+    pub fn set_clear_color(&self, color: Color) {
+        self.state.borrow_mut().set_clear_color(&self.gl, color);
+    }
+
+    pub fn clear_color(&self) {
+        unsafe { self.gl.clear(COLOR_BUFFER_BIT); }
+    }
+
+    pub fn enable_blending(&self) {
+        self.state.borrow_mut().enable_blending(&self.gl);
+    }
+
+    pub fn disable_blending(&self) {
+        self.state.borrow_mut().disable_blending(&self.gl);
+    }
+
     fn delete_vertex_array(&self, vertex_array: NativeVertexArray) {
         let mut state = self.state.borrow_mut();
         state.unbind_vertex_array(&self.gl, vertex_array);
@@ -196,5 +157,17 @@ impl GlContext {
         state.unbind_program(&self.gl, program);
 
         unsafe { self.gl.delete_program(program); }
+    }
+}
+
+pub enum GlPrimitive {
+    Triangles
+}
+
+impl GlPrimitive {
+    fn gl_value(&self) -> u32 {
+        match self {
+            GlPrimitive::Triangles => TRIANGLES
+        }
     }
 }
