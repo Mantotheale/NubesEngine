@@ -125,7 +125,7 @@ impl GlContext {
         self.state.borrow_mut().set_clear_color(&self.gl, color);
     }
 
-    pub fn clear_color(&self) {
+    pub fn clear(&self) {
         unsafe { self.gl.clear(COLOR_BUFFER_BIT); }
     }
 

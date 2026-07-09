@@ -40,7 +40,10 @@ impl Renderer {
     pub fn add_colored_rect(&mut self, rect: Rect, color: Color) {
         if !self.has_scene_begun { panic!("Scene hasn't begun yet") }
 
-        self.colored_rect_batch_data.add_rect(rect, color);
+        if self.colored_rect_batch_data.add_rect(rect, color).is_err() {
+            self.colored_rect_batch_data.flush(&self.gl_context);
+            self.colored_rect_batch_data.add_rect(rect, color).unwrap();
+        }
     }
 
     pub fn set_clear_color(&self, color: Color) {
@@ -48,7 +51,7 @@ impl Renderer {
     }
 
     pub fn clear(&self) {
-        self.gl_context.clear_color();
+        self.gl_context.clear();
     }
 
     pub fn set_blending(&self, is_blending: bool) {

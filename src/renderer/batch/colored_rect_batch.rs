@@ -1,7 +1,6 @@
 use std::path::Path;
 use std::rc::Rc;
 use crate::constants;
-use crate::constants::{ASSETS_PATH, MAX_COLORED_RECTANGLES};
 use crate::math::rect::Rect;
 use crate::renderer::batch::Colored2DVertex;
 use crate::renderer::color::Color;
@@ -41,9 +40,9 @@ impl ColoredRectBatchData {
 
         let shader_program = ShaderProgram::new(
             gl_context,
-            VertexShader::new_from_path(gl_context, &Path::new(ASSETS_PATH).join("shaders/simple_color.vert")),
+            VertexShader::new_from_path(gl_context, &Path::new(constants::ASSETS_PATH).join("shaders/simple_color.vert")),
             None,
-            FragmentShader::new_from_path(gl_context, &Path::new(ASSETS_PATH).join("shaders/simple_color.frag"))
+            FragmentShader::new_from_path(gl_context, &Path::new(constants::ASSETS_PATH).join("shaders/simple_color.frag"))
         );
 
         ColoredRectBatchData {
@@ -54,8 +53,8 @@ impl ColoredRectBatchData {
         }
     }
 
-    pub fn add_rect(&mut self, rect: Rect, color: Color) {
-        if self.inserted_rects == MAX_COLORED_RECTANGLES { panic!("Can't add more rectangles") }
+    pub fn add_rect(&mut self, rect: Rect, color: Color) -> Result<(), ()> {
+        if self.inserted_rects == constants::MAX_COLORED_RECTANGLES { return Err(()); }
 
         let bottom_left = Colored2DVertex::from_point_and_color(rect.bottom_left(), color);
         let bottom_right = Colored2DVertex::from_point_and_color(rect.bottom_right(), color);
@@ -68,11 +67,16 @@ impl ColoredRectBatchData {
         self.vertices_batch.push(top_left);
 
         self.inserted_rects += 1;
+        Ok(())
     }
 
     pub fn flush(&mut self, gl_context: &GlContext) {
-        self.vertex_array.load(self.vertices_batch.as_slice());
+        self.vertex_array.load(
+            self.vertices_batch.as_slice(), 
+            Some(self.inserted_rects * constants::INDICES_PER_RECTANGLE)
+        );
         gl_context.draw(&self.vertex_array, &self.shader_program, GlPrimitive::Triangles);
+        
         self.vertices_batch.clear();
         self.inserted_rects = 0;
     }

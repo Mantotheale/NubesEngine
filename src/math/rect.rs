@@ -1,5 +1,6 @@
 use crate::math::point2f::Point2f;
 
+#[derive(Copy, Clone)]
 pub struct Rect {
     center: Point2f,
     width: f32,

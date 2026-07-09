@@ -53,13 +53,19 @@ impl<V: Vertex> CommonVertexArrayData<V> {
 struct IndexBufferData {
     buffer: NativeBuffer,
     len: usize,
-    gl_type: u32,
+    capacity: usize,
+    gl_type: u32
 }
 
 impl IndexBufferData {
     fn new<I: Index>(gl_context: &GlContext, indices: &[I]) -> Self {
         let buffer = gl_context.gen_index_buffer(indices);
-        Self { buffer, len: indices.len(), gl_type: I::GL_TYPE }
+        Self { buffer, capacity: indices.len(), gl_type: I::GL_TYPE, len: 0 }
+    }
+
+    fn set_len(&mut self, len: usize) {
+        assert!(len <= self.capacity);
+        self.len = len;
     }
 }
 
@@ -80,7 +86,7 @@ impl<V: Vertex> VertexArray<V> {
 
     pub fn new_with_data(gl_context: &Rc<GlContext>, data: &[V], usage: GlUsageHint) -> Self {
         let mut array = Self::new(gl_context, data.len(), usage);
-        array.load(data);
+        array.load(data, None);
         array
     }
 
@@ -90,9 +96,9 @@ impl<V: Vertex> VertexArray<V> {
         Self { gl_context: gl_context.clone(), common_data, index_data: Some(index_data) }
     }
 
-    pub fn new_indexed_with_data<I: Index>(gl_context: &Rc<GlContext>, data: &[V], indices: &[I], usage: GlUsageHint) -> Self {
+    pub fn new_indexed_with_data<I: Index>(gl_context: &Rc<GlContext>, data: &[V], indices: &[I], usage: GlUsageHint, indices_len: usize) -> Self {
         let mut array = Self::new_indexed(gl_context, data.len(), indices, usage);
-        array.load(data);
+        array.load(data, Some(indices_len));
         array
     }
 
@@ -100,10 +106,16 @@ impl<V: Vertex> VertexArray<V> {
         self.common_data.array
     }
 
-    pub fn load(&mut self, data: &[V]) {
+    pub fn load(&mut self, data: &[V], indices_len: Option<usize>) {
         assert!(data.len() <= self.common_data.capacity);
         self.gl_context.load_vertex_buffer(self.common_data.vertex_buffer, data);
         self.common_data.len = data.len();
+
+        if let Some(indices_len) = indices_len {
+            assert!(self.index_data.is_some());
+            let Some(index_data) = &mut self.index_data else { unreachable!() };
+            index_data.set_len(indices_len);
+        }
     }
 
     pub fn draw(&self, gl: &Context, gl_primitive: GlPrimitive) {

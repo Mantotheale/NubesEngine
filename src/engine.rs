@@ -1,13 +1,4 @@
-use crate::{
-    fixed_timer::FixedTimer,
-    math::point2f::Point2f,
-    math::rect::Rect,
-    renderer::color::Color,
-    renderer::gl_context::vertex::layout::VertexLayout,
-    renderer::gl_context::vertex::layout::VertexLayoutBuilder,
-    renderer::gl_context::vertex::Vertex,
-    renderer::Renderer
-};
+use crate::{constants, fixed_timer::FixedTimer, math::point2f::Point2f, math::rect::Rect, renderer::color::Color, renderer::Renderer};
 use std::time::{Duration, Instant};
 use winit::window::WindowAttributes;
 use winit::{
@@ -17,7 +8,7 @@ use winit::{
 
 pub struct Engine {
     renderer: Renderer,
-    _window: Window,
+    window: Window,
     update_timer: FixedTimer,
     one_sec_timer: FixedTimer,
     update_count: u16,
@@ -33,7 +24,7 @@ impl Engine {
 
         Self {
             renderer,
-            _window: window,
+            window,
             update_timer: FixedTimer::new(Duration::from_secs_f64(1f64 / 60f64)),
             one_sec_timer: FixedTimer::new(Duration::from_secs(1)),
             update_count: 0,
@@ -68,33 +59,24 @@ impl Engine {
     pub fn tick(&mut self) {
         let current_time = Instant::now();
 
-        while self.update_timer.try_tick(current_time) {
+        let mut catch_ups = 0;
+        while self.update_timer.try_tick(current_time) && catch_ups < constants::MAX_CATCH_UP_UPDATES {
             self.update();
+            catch_ups += 1;
         }
 
-        self.render();
-
-        while self.one_sec_timer.try_tick(current_time) {
+        let mut catch_ups = 0;
+        while self.one_sec_timer.try_tick(current_time) && catch_ups < constants::MAX_CATCH_UP_UPDATES {
             self.one_sec_update();
+            catch_ups += 1;
         }
+
+        self.window.request_redraw();
     }
 }
 
 impl Drop for Engine {
     fn drop(&mut self) {
         println!("Engine dropped");
-    }
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, bytemuck::NoUninit)]
-struct PositionVertex {
-    x: f32,
-    y: f32,
-}
-
-impl Vertex for PositionVertex {
-    fn layout() -> VertexLayout {
-        VertexLayoutBuilder::new().add_floats(2).build()
     }
 }

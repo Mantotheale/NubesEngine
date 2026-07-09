@@ -4,17 +4,17 @@ use std::rc::Rc;
 use glow::{NativeShader, FRAGMENT_SHADER, GEOMETRY_SHADER, VERTEX_SHADER};
 use crate::renderer::gl_context::GlContext;
 
-pub struct Vertex;
-pub struct Fragment;
-pub struct Geometry;
+pub struct VertexKind;
+pub struct FragmentKind;
+pub struct GeometryKind;
 
 pub trait ShaderKind {
     const GL_TYPE: u32;
 }
 
-impl ShaderKind for Vertex { const GL_TYPE: u32 = VERTEX_SHADER; }
-impl ShaderKind for Fragment { const GL_TYPE: u32 = FRAGMENT_SHADER; }
-impl ShaderKind for Geometry { const GL_TYPE: u32 = GEOMETRY_SHADER; }
+impl ShaderKind for VertexKind { const GL_TYPE: u32 = VERTEX_SHADER; }
+impl ShaderKind for FragmentKind { const GL_TYPE: u32 = FRAGMENT_SHADER; }
+impl ShaderKind for GeometryKind { const GL_TYPE: u32 = GEOMETRY_SHADER; }
 
 pub struct Shader<K: ShaderKind> {
     native_shader: NativeShader,
@@ -47,6 +47,6 @@ impl<K: ShaderKind> Drop for Shader<K> {
     }
 }
 
-pub type VertexShader = Shader<Vertex>;
-pub type FragmentShader = Shader<Fragment>;
-pub type GeometryShader = Shader<Geometry>;
+pub type VertexShader = Shader<VertexKind>;
+pub type FragmentShader = Shader<FragmentKind>;
+pub type GeometryShader = Shader<GeometryKind>;
