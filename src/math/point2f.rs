@@ -1,3 +1,6 @@
+use std::fmt::{Debug, Formatter};
+use std::ops::{Add, Sub};
+use crate::math::vec2f::Vec2f;
 use super::approx_eq::ApproxEq;
 
 #[derive(Copy, Clone)]
@@ -20,8 +23,30 @@ impl Point2f {
     }
 }
 
+impl Add for Point2f {
+    type Output = Vec2f;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Vec2f::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Sub for Point2f {
+    type Output = Vec2f;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vec2f::new(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+
 impl ApproxEq for Point2f {
     fn approx_eq(&self, other: &Self, epsilon: f32) -> bool {
         self.x.approx_eq(&other.x, epsilon) && self.y.approx_eq(&other.y, epsilon)
+    }
+}
+
+impl Debug for Point2f {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Point2f(x: {}, y:, {})", self.x, self.y)
     }
 }
