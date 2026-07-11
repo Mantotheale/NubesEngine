@@ -14,9 +14,50 @@ use winit::{
 };
 use winit::dpi::LogicalSize;
 use winit::window::{Window, WindowAttributes};
+use crate::math::mat3f::Mat3f;
+use crate::math::vec3f::Vec3f;
 
 fn main() {
-    let window_attributes = Window::default_attributes()
+    let v = Vec3f::new(0f32, 1f32, 2f32);
+    println!("{:?}", v);
+    println!("{:?}", v * 3f32);
+    println!("{:?}", 2f32 * v);
+    println!("{:?}", v.len());
+    println!("{:?}", v.normalize().expect("Non zero vector"));
+    println!("{:?}", v + Vec3f::new(2.0, 3.4, 1.9));
+    println!("{:?}", v - Vec3f::new(-1.0, 2.0, -4.0));
+
+    let m = Mat3f::new(
+        1f32, 0f32, 0f32,
+        0f32, 1f32, 0f32,
+        0f32, 0f32, 1f32
+    );
+    println!("{:?}", m);
+    println!("{:?}", m[(1, 1)]);
+    println!("{:?}", m.get(0, 2));
+    println!("{:?}", m * 3.0);
+    println!("{:?}", m - m);
+
+    let m = Mat3f::new(
+        0f32, 1f32, 0f32,
+        0f32, 1f32, 1f32,
+        2f32, 3f32, 4f32
+    );
+    let v = Vec3f::new(3f32, 5f32, 3f32);
+    println!("{:?}", m * v);
+
+    let v1 = Vec3f::new(1.0, 2.0, 3.0);
+    let v2 = Vec3f::new(3.0, 2.0, 1.0);
+    println!("{:?}", v1.cross(v2));
+    let projection = v1.project(v2).expect("Non zero vectors");
+    let rejection = v1.reject(v2).expect("Non zero vectors");
+    println!("{:?}", projection);
+    println!("{:?}", rejection);
+    println!("{:?}", projection.dot(rejection));
+    println!("{:?}", m.determinant());
+    println!("{:?}", m.inverse().expect("Invertible matrix"));
+
+    /*let window_attributes = Window::default_attributes()
         .with_title("Nubes Engine")
         .with_inner_size(LogicalSize::new(1280.0, 720.0));
     
@@ -26,7 +67,7 @@ fn main() {
 
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    _ = event_loop.run_app(&mut EntryPoint::new(window_attributes));
+    _ = event_loop.run_app(&mut EntryPoint::new(window_attributes));*/
 }
 
 struct EntryPoint {
