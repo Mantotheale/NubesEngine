@@ -6,3 +6,4 @@ pub mod vec2f;
 pub mod vec3f;
 pub mod non_zero_f32;
 pub mod mat3f;
+pub mod angle;

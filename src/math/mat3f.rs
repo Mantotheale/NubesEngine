@@ -1,4 +1,5 @@
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
+use crate::math::angle::Angle;
 use crate::math::non_zero_f32::NonZeroF32;
 use crate::math::vec3f::Vec3f;
 
@@ -46,6 +47,31 @@ impl Mat3f {
             y_col: c1.into(),
             z_col: c2.into()
         }
+    }
+
+    pub fn from_axis_rotation(axis: Vec3f, rotation: Angle) -> Option<Self> {
+        let axis = axis.normalize()?;
+        let s = rotation.sin();
+        let c = rotation.cos();
+        let one_minus_c = 1.0 - c;
+        let sx = axis.x() * s;
+        let sy = axis.y() * s;
+        let sz = axis.z() * s;
+        let xy_one_minus_c = axis.x() * axis.y() * one_minus_c;
+        let yz_one_minus_c = axis.y() * axis.z() * one_minus_c;
+        let xz_one_minus_c = axis.x() * axis.z() * one_minus_c;
+
+        Some(Self::new(
+            axis.x() * axis.x() * one_minus_c + c,
+            xy_one_minus_c - sz,
+            xz_one_minus_c + sy,
+            xy_one_minus_c + sz,
+            axis.y() * axis.y() * one_minus_c + c,
+            yz_one_minus_c - sx,
+            xz_one_minus_c - sy,
+            yz_one_minus_c + sx,
+            axis.z() * axis.z() * one_minus_c + c,
+        ))
     }
 
     pub fn get(&self, row: usize, col: usize) -> Option<&f32> {

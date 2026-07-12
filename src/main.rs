@@ -14,6 +14,7 @@ use winit::{
 };
 use winit::dpi::LogicalSize;
 use winit::window::{Window, WindowAttributes};
+use crate::math::angle::Angle;
 use crate::math::mat3f::Mat3f;
 use crate::math::vec3f::Vec3f;
 
@@ -56,6 +57,17 @@ fn main() {
     println!("{:?}", projection.dot(rejection));
     println!("{:?}", m.determinant());
     println!("{:?}", m.inverse().expect("Invertible matrix"));
+    println!("{:?}", m * m.inverse().expect("Invertible matrix"));
+    println!("{:?}", Angle::from_degrees(90.0).sin());
+    println!("{:?}", Angle::from_degrees(-45.0).sin());
+    println!("{:?}", Angle::from_degrees(90.0).cos());
+    println!("{:?}", Angle::from_degrees(-45.0).cos());
+    let v = Vec3f::new(1.0, 0.0, 0.0);
+    let m = Mat3f::from_axis_rotation(
+        Vec3f::new(0.0, 0.0, 1.0),
+        Angle::from_degrees(90.0)
+    ).expect("Non zero vector");
+    println!("{:?}", m * v);
 
     /*let window_attributes = Window::default_attributes()
         .with_title("Nubes Engine")
