@@ -64,8 +64,12 @@ fn main() {
     println!("{:?}", Angle::from_degrees(-45.0).cos());
     let v = Vec3f::new(1.0, 0.0, 0.0);
     let m = Mat3f::from_axis_rotation(
-        Vec3f::new(0.0, 0.0, 1.0),
+        Vec3f::UNIT_Z,
         Angle::from_degrees(90.0)
+    ).expect("Non zero vector");
+    println!("{:?}", m * v);
+    let m = Mat3f::from_reflection_perp_axis(
+        Vec3f::UNIT_Y,
     ).expect("Non zero vector");
     println!("{:?}", m * v);
 

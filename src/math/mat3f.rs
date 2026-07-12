@@ -74,6 +74,19 @@ impl Mat3f {
         ))
     }
 
+    pub fn from_reflection_perp_axis(axis: Vec3f) -> Option<Self> {
+        let axis = axis.normalize()?;
+        let minus_two_xy = -2.0 * axis.x() * axis.y();
+        let minus_two_yz = -2.0 * axis.y() * axis.z();
+        let minus_two_xz = -2.0 * axis.x() * axis.z();
+
+        Some(Self::new(
+            1.0 - 2.0 * axis.x() * axis.x(), minus_two_xy, minus_two_xz,
+            minus_two_xy, 1.0 - 2.0 * axis.y() * axis.y(), minus_two_yz,
+            minus_two_xz, minus_two_yz, 1.0 - 2.0 * axis.z() * axis.z()
+        ))
+    }
+
     pub fn get(&self, row: usize, col: usize) -> Option<&f32> {
         match col {
             0 => self.x_col.get(row),
