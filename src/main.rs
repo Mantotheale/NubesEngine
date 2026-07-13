@@ -72,6 +72,22 @@ fn main() {
         Vec3f::UNIT_Y,
     ).expect("Non zero vector");
     println!("{:?}", m * v);
+    let v = Vec3f::new(0.0, 0.0, 1.0);
+    let m = Mat3f::from_scaling(2.0, 1.5, 0.7);
+    println!("{:?}", m * v);
+    println!("{:?}", m * Vec3f::new(2.0, 2.0, 2.0));
+    let v = Vec3f::new(0.0, 1.0, 1.0);
+    let m = Mat3f::from_scaling_vec(Vec3f::new(1.2, 2.5, 1.7));
+    println!("{:?}", m * v);
+    println!("{:?}", m * Vec3f::new(2.0, 2.0, 2.0));
+    let v = Vec3f::new(-2.0, 1.0, 2.0);
+    let m = Mat3f::from_uniform_scaling(3.0);
+    println!("{:?}", m * v);
+    println!("{:?}", m * Vec3f::new(2.0, 2.0, 2.0));
+    let v = Vec3f::new(-2.0, 1.0, 2.0);
+    let m = Mat3f::from_axis_scaling(Vec3f::new(1.0, 2.0, 3.0), 2.0)
+        .expect("Non zero vector");
+    println!("{:?}", m * v);
 
     /*let window_attributes = Window::default_attributes()
         .with_title("Nubes Engine")

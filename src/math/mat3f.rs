@@ -87,6 +87,47 @@ impl Mat3f {
         ))
     }
 
+    pub fn from_scaling_vec(scaling_vec: Vec3f) -> Self {
+        Self::new(
+            scaling_vec.x(), 0.0, 0.0,
+            0.0, scaling_vec.y(), 0.0,
+            0.0, 0.0, scaling_vec.z()
+        )
+    }
+
+    pub fn from_scaling(sx: f32, sy: f32, sz: f32) -> Self {
+        Self::new(
+            sx, 0.0, 0.0,
+            0.0, sy, 0.0,
+            0.0, 0.0, sz
+        )
+    }
+
+    pub fn from_uniform_scaling(s: f32) -> Self {
+        Self::new(
+            s, 0.0, 0.0,
+            0.0, s, 0.0,
+            0.0, 0.0, s
+        )
+    }
+
+    pub fn from_axis_scaling(axis: Vec3f, scaling: f32) -> Option<Self> {
+        let axis = axis.normalize()?;
+        let s_minus_one = scaling - 1.0;
+        let xy = axis.x() * axis.y();
+        let yz = axis.y() * axis.z();
+        let xz = axis.x() * axis.z();
+        let s_minus_one_xy = s_minus_one * xy;
+        let s_minus_one_yz = s_minus_one * yz;
+        let s_minus_one_xz = s_minus_one * xz;
+
+        Some(Self::new(
+            1.0 + s_minus_one * axis.x() * axis.x(), s_minus_one_xy, s_minus_one_xz,
+            s_minus_one_xy, 1.0 + s_minus_one * axis.y() * axis.y(), s_minus_one_yz,
+            s_minus_one_xz, s_minus_one_yz, 1.0 + s_minus_one * axis.z() * axis.z()
+        ))
+    }
+
     pub fn get(&self, row: usize, col: usize) -> Option<&f32> {
         match col {
             0 => self.x_col.get(row),
