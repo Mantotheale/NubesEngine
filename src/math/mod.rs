@@ -7,3 +7,7 @@ pub mod vec3f;
 pub mod non_zero_f32;
 pub mod mat3f;
 pub mod angle;
+pub mod point3f;
+pub mod mat4f;
+pub mod vec4f;
+mod affine4f;

@@ -21,14 +21,14 @@ impl Vec3f {
     pub const UNIT_Z: Self = Self { x: 0.0, y: 0.0, z: 1.0 };
 
     pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Vec3f { x, y, z }
+        Self { x, y, z }
     }
     
-    pub fn get(&self, idx: usize) -> Option<&f32> {
+    pub fn get(&self, idx: usize) -> Option<f32> {
         match idx {
-            0 => Some(&self.x),
-            1 => Some(&self.y),
-            2 => Some(&self.z),
+            0 => Some(self.x),
+            1 => Some(self.y),
+            2 => Some(self.z),
             _ => None
         }
     }

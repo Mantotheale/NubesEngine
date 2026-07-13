@@ -128,7 +128,7 @@ impl Mat3f {
         ))
     }
 
-    pub fn get(&self, row: usize, col: usize) -> Option<&f32> {
+    pub fn get(&self, row: usize, col: usize) -> Option<f32> {
         match col {
             0 => self.x_col.get(row),
             1 => self.y_col.get(row),
@@ -141,21 +141,22 @@ impl Mat3f {
         self.x_col.dot(self.y_col.cross(self.z_col))
     }
 
-    pub fn inverse(&self) -> Option<Self> {
-        let det = NonZeroF32::new(self.determinant())?;
-
-        let adjugate = Self::from_row_vecs(
+    pub fn adjugate(&self) -> Self {
+        Self::from_row_vecs(
             self.y_col.cross(self.z_col),
             self.z_col.cross(self.x_col),
             self.x_col.cross(self.y_col)
-        );
+        )
+    }
 
-        Some(adjugate / det)
+    pub fn inverse(&self) -> Option<Self> {
+        let det = NonZeroF32::new(self.determinant())?;
+        Some(self.adjugate() / det)
     }
 }
 
 impl Add for Mat3f {
-    type Output = Mat3f;
+    type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::from_col_vecs(
@@ -167,7 +168,7 @@ impl Add for Mat3f {
 }
 
 impl Sub for Mat3f {
-    type Output = Mat3f;
+    type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self::from_col_vecs(
@@ -179,7 +180,7 @@ impl Sub for Mat3f {
 }
 
 impl Neg for Mat3f {
-    type Output = Mat3f;
+    type Output = Self;
 
     fn neg(self) -> Self::Output {
         Self::from_col_vecs(-self.x_col, -self.y_col, -self.z_col)
