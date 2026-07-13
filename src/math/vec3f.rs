@@ -1,6 +1,7 @@
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 use crate::math::approx_eq::ApproxEq;
 use crate::math::non_zero_f32::NonZeroF32;
+use crate::math::point3f::Point3f;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3f {
@@ -153,5 +154,11 @@ impl ApproxEq for Vec3f {
 impl From<[f32; 3]> for Vec3f {
     fn from(arr: [f32; 3]) -> Self {
         Self::new(arr[0], arr[1], arr[2])
+    }
+}
+
+impl From<Point3f> for Vec3f {
+    fn from(p: Point3f) -> Self {
+        Self { x: p.x(), y: p.y(), z: p.z() }
     }
 }

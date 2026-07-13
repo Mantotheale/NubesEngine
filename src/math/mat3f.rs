@@ -1,6 +1,7 @@
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 use crate::math::angle::Angle;
 use crate::math::non_zero_f32::NonZeroF32;
+use crate::math::point3f::Point3f;
 use crate::math::vec3f::Vec3f;
 
 #[derive(Debug, Copy, Clone)]
@@ -229,6 +230,14 @@ impl Mul<Vec3f> for Mat3f {
 
     fn mul(self, rhs: Vec3f) -> Self::Output {
         self.x_col * rhs.x() + self.y_col * rhs.y() + self.z_col * rhs.z()
+    }
+}
+
+impl Mul<Point3f> for Mat3f {
+    type Output = Point3f;
+
+    fn mul(self, rhs: Point3f) -> Self::Output {
+        (self.x_col * rhs.x() + self.y_col * rhs.y() + self.z_col * rhs.z()).into()
     }
 }
 

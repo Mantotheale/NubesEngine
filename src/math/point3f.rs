@@ -13,6 +13,18 @@ impl Point3f {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Point3f { x, y, z }
     }
+    
+    pub fn x(&self) -> f32 {
+        self.x
+    }
+
+    pub fn y(&self) -> f32 {
+        self.y
+    }
+
+    pub fn z(&self) -> f32 {
+        self.z
+    }
 }
 
 impl Add<Vec3f> for Point3f {
@@ -36,5 +48,11 @@ impl ApproxEq for Point3f {
         self.x.approx_eq(&other.x, epsilon) &&
             self.y.approx_eq(&other.y, epsilon) &&
             self.z.approx_eq(&other.z, epsilon)
+    }
+}
+
+impl From<Vec3f> for Point3f {
+    fn from(vec: Vec3f) -> Self {
+        Self { x: vec.x(), y: vec.y(), z: vec.z() }
     }
 }
