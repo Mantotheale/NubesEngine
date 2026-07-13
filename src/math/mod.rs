@@ -10,4 +10,5 @@ pub mod angle;
 pub mod point3f;
 pub mod mat4f;
 pub mod vec4f;
-mod affine4f;
+pub mod affine4f;
+pub mod quaternionf;
