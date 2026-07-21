@@ -5,6 +5,7 @@ use winit::{
     event_loop::ActiveEventLoop,
     window::Window
 };
+use crate::math::segment::Segment;
 
 pub struct Engine {
     renderer: Renderer,
@@ -46,6 +47,12 @@ impl Engine {
             Rect::new(Point2f::new(0f32, 0f32), 1f32, 1f32)
                 .expect("Valid rect"),
             Color::new(0.75, 0.2, 0.3, 1f32).expect("Valid color")
+        );
+        self.renderer.add_colored_segment(
+            Segment::new(Point2f::new(-0.75, -0.75), Point2f::new(0.75, -0.5))
+                .expect("Valid line"),
+            Color::new(0.75, 0.2, 0.3, 1f32).expect("Valid color"),
+            1.0
         );
         self.renderer.end_scene();
 

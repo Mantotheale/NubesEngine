@@ -6,6 +6,8 @@ use gl_context::GlContext;
 use std::rc::Rc;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Window, WindowAttributes};
+use crate::math::segment::Segment;
+use crate::renderer::batch::colored_segment_batch::ColoredSegmentBatchData;
 
 pub mod gl_context;
 pub mod color;
@@ -16,6 +18,7 @@ pub struct Renderer {
     glutin_context: GlutinContext,
     gl_context: Rc<GlContext>,
     colored_rect_batch_data: ColoredRectBatchData,
+    colored_line_batch_data: ColoredSegmentBatchData,
     has_scene_begun: bool
 }
 
@@ -25,7 +28,8 @@ impl Renderer {
         let gl_context = glutin_context.load_glow_context();
         let gl_context = Rc::new(GlContext::new(gl_context));
         let colored_rect_batch_data = ColoredRectBatchData::new(&gl_context);
-        (Self { glutin_context, gl_context, colored_rect_batch_data, has_scene_begun: false }, window)
+        let colored_line_batch_data = ColoredSegmentBatchData::new(&gl_context);
+        (Self { glutin_context, gl_context, colored_rect_batch_data, colored_line_batch_data, has_scene_begun: false }, window)
     }
 
     pub fn begin_scene(&mut self) {
@@ -34,6 +38,7 @@ impl Renderer {
 
     pub fn end_scene(&mut self) {
         self.colored_rect_batch_data.flush(&self.gl_context);
+        self.colored_line_batch_data.flush(&self.gl_context);
         self.has_scene_begun = false;
     }
 
@@ -43,6 +48,16 @@ impl Renderer {
         if self.colored_rect_batch_data.add_rect(rect, color).is_err() {
             self.colored_rect_batch_data.flush(&self.gl_context);
             self.colored_rect_batch_data.add_rect(rect, color)
+                .expect("Batch was just flushed, so it must have room for one more rect");
+        }
+    }
+
+    pub fn add_colored_segment(&mut self, segment: Segment, color: Color, pixel_width: f32) {
+        if !self.has_scene_begun { panic!("Scene hasn't begun yet") }
+
+        if self.colored_line_batch_data.add_segment(segment, color, pixel_width).is_err() {
+            self.colored_line_batch_data.flush(&self.gl_context);
+            self.colored_line_batch_data.add_segment(segment, color, pixel_width)
                 .expect("Batch was just flushed, so it must have room for one more rect");
         }
     }

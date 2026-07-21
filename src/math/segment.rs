@@ -18,6 +18,7 @@ impl fmt::Display for SegmentPointsCoincide {
 
 impl std::error::Error for SegmentPointsCoincide {}
 
+#[derive(Copy, Clone)]
 pub struct Segment {
     origin: Point2f,
     destination: Point2f

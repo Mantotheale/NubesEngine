@@ -3,7 +3,7 @@ use crate::renderer::gl_context::gl_state::GlState;
 use crate::renderer::gl_context::shader::shader_kind::{FragmentShader, GeometryShader, ShaderKind, VertexShader};
 use crate::renderer::gl_context::shader::ShaderProgram;
 use crate::renderer::gl_context::vertex::array::{Index, VertexArray};
-use glow::{Context, HasContext, NativeBuffer, NativeProgram, NativeShader, NativeVertexArray, ARRAY_BUFFER, COLOR_BUFFER_BIT, ELEMENT_ARRAY_BUFFER, STATIC_DRAW, TRIANGLES};
+use glow::{Context, HasContext, NativeBuffer, NativeProgram, NativeShader, NativeVertexArray, ARRAY_BUFFER, COLOR_BUFFER_BIT, ELEMENT_ARRAY_BUFFER, LINES, STATIC_DRAW, TRIANGLES};
 use std::cell::RefCell;
 use vertex::{array::GlUsageHint, Vertex};
 
@@ -161,13 +161,15 @@ impl GlContext {
 }
 
 pub enum GlPrimitive {
-    Triangles
+    Triangles,
+    Lines
 }
 
 impl GlPrimitive {
     fn gl_value(&self) -> u32 {
         match self {
-            GlPrimitive::Triangles => TRIANGLES
+            GlPrimitive::Triangles => TRIANGLES,
+            GlPrimitive::Lines => LINES
         }
     }
 }
