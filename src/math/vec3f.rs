@@ -122,7 +122,7 @@ impl Mul<Vec3f> for f32 {
 }
 
 impl Div<NonZeroF32> for Vec3f {
-    type Output = Vec3f;
+    type Output = Self;
 
     fn div(self, rhs: NonZeroF32) -> Self::Output {
         let inv = 1.0 / rhs;
